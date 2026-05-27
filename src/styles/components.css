@@ -1,6 +1,59 @@
 .top-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   font-size: 1.125rem;
   font-weight: 700;
+}
+
+.save-status-icon {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  display: inline-block;
+  border: 2px solid var(--color-muted);
+  border-radius: 3px;
+}
+
+.save-status-icon::before {
+  content: '';
+  position: absolute;
+  left: 0.18rem;
+  right: 0.18rem;
+  bottom: 0.16rem;
+  height: 0.28rem;
+  border: 1px solid var(--color-muted);
+  background: var(--color-surface);
+}
+
+.save-status-icon::after {
+  content: '';
+  position: absolute;
+  left: 0.16rem;
+  top: 0.12rem;
+  width: 0.36rem;
+  height: 0.22rem;
+  background: var(--color-muted);
+}
+
+.save-status-icon[data-saved='false'] {
+  opacity: 0.72;
+}
+
+.save-status-icon[data-saved='false']::after {
+  left: -0.1rem;
+  top: 0.38rem;
+  width: 1.2rem;
+  height: 2px;
+  background: var(--color-danger, #b42318);
+  transform: rotate(-38deg);
+}
+
+.top-bar__divider {
+  width: 1px;
+  height: 1.1rem;
+  margin: 0 0.15rem;
+  background: var(--color-border);
 }
 
 .field {
@@ -49,16 +102,14 @@
 }
 
 .menu-control,
-.panel-menu,
-.help-menu {
+.panel-menu {
   position: relative;
   min-height: 2.25rem;
   color: var(--color-text);
 }
 
 .menu-control__summary,
-.panel-menu__summary,
-.help-menu__summary {
+.panel-menu__summary {
   min-height: 2.25rem;
   display: flex;
   align-items: center;
@@ -72,28 +123,24 @@
 }
 
 .menu-control__summary::-webkit-details-marker,
-.panel-menu__summary::-webkit-details-marker,
-.help-menu__summary::-webkit-details-marker {
+.panel-menu__summary::-webkit-details-marker {
   display: none;
 }
 
 .menu-control__summary::after,
-.panel-menu__summary::after,
-.help-menu__summary::after {
+.panel-menu__summary::after {
   content: '▾';
   color: var(--color-muted);
   font-size: 0.75rem;
 }
 
 .menu-control[open] .menu-control__summary,
-.panel-menu[open] .panel-menu__summary,
-.help-menu[open] .help-menu__summary {
+.panel-menu[open] .panel-menu__summary {
   background: var(--color-control-hover);
 }
 
 .menu-control__content,
-.panel-menu__content,
-.help-menu__content {
+.panel-menu__content {
   position: absolute;
   z-index: 10;
   right: 0;
@@ -146,8 +193,44 @@
 }
 
 .menu-control__file-item,
-.menu-control__checkbox-item {
+.menu-control__checkbox-item,
+.menu-control__number-item {
   cursor: pointer;
+}
+
+.menu-control__number-item {
+  justify-content: space-between;
+}
+
+.menu-control__nested {
+  color: var(--color-text);
+}
+
+.menu-control__nested summary {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  padding: 0.25rem 0.45rem;
+  border-radius: 6px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.menu-control__nested summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu-control__nested summary::after {
+  content: '▾';
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.menu-control__nested summary:hover,
+.menu-control__nested summary:focus-visible {
+  background: var(--color-control-hover);
 }
 
 .menu-control__file-item input {
@@ -159,17 +242,19 @@
   white-space: nowrap;
 }
 
-.help-menu__content {
+.menu-control__help {
   min-width: 18rem;
+  padding: 0.25rem 0.45rem;
   color: var(--color-text);
+  font-size: 0.875rem;
 }
 
-.help-menu__content p {
+.menu-control__help p {
   margin: 0 0 0.35rem;
   font-weight: 700;
 }
 
-.help-menu__content ul {
+.menu-control__help ul {
   display: grid;
   gap: 0.2rem;
   margin: 0;
@@ -297,7 +382,7 @@
 .text-editor {
   min-height: 100%;
   display: grid;
-  grid-template-rows: auto minmax(16rem, 1fr);
+  grid-template-rows: auto auto minmax(16rem, 1fr);
   gap: 0.5rem;
 }
 
@@ -306,6 +391,55 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.text-editor__body {
+  position: relative;
+  min-height: 100%;
+  display: block;
+}
+
+.text-editor__warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+  padding: 0.35rem 0.45rem 0.35rem 0.6rem;
+  border: 1px solid #e0c36a;
+  border-radius: 6px;
+  color: #6f5600;
+  background: #fff7d6;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+[data-theme='dark'] .text-editor__warning {
+  border-color: #6f5f24;
+  color: #f3dd86;
+  background: #2d2612;
+}
+
+[data-theme='high-contrast'] .text-editor__warning {
+  border-color: #ffff00;
+  color: #000000;
+  background: #ffff00;
+}
+
+.text-editor__warning-close {
+  min-width: 1.35rem;
+  min-height: 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  color: inherit;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 .text-editor__textarea {
@@ -319,6 +453,67 @@
   background: var(--color-editor);
   font-size: var(--editor-font-size, 18px);
   line-height: 1.6;
+}
+
+.text-editor__fold-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.text-editor__fold-toggle {
+  position: absolute;
+  z-index: 3;
+  min-width: 1.15em;
+  min-height: 1.15em;
+  width: 1.15em;
+  height: 1.15em;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--color-editor);
+  color: var(--color-muted);
+  font-size: var(--editor-font-size, 18px);
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.text-editor__fold-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-control-hover);
+}
+
+.text-editor__fold-badge {
+  position: absolute;
+  z-index: 3;
+  max-width: 12rem;
+  min-height: 1.35em;
+  display: flex;
+  align-items: center;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  color: var(--color-muted);
+  background: #eeeeee;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(0.05em);
+}
+
+[data-theme='dark'] .text-editor__fold-badge {
+  background: #2d3238;
+}
+
+[data-theme='contrast'] .text-editor__fold-badge {
+  background: #ffffff;
+  color: #000000;
 }
 
 .pinyin-bar {
@@ -366,10 +561,15 @@
 }
 
 .pinyin-bar__index,
+.pinyin-bar__page,
 .pinyin-bar__empty {
   color: var(--color-muted);
   font-size: 0.8rem;
   font-weight: 700;
+}
+
+.pinyin-bar__page {
+  margin-left: auto;
 }
 
 .virtual-panel-placeholder {
@@ -441,8 +641,7 @@
 
 @media (max-width: 720px) {
   .menu-control__content,
-  .panel-menu__content,
-  .help-menu__content {
+  .panel-menu__content {
     left: 0;
     right: auto;
   }

@@ -1,17 +1,15 @@
 type FileMenuProps = {
-  onClearSavedText: () => void;
   onExportText: () => void;
   onImportText: (file: File) => void;
   saveTextLocally: boolean;
-  onToggleSaveTextLocally: () => void;
+  onSaveTextLocallyChange: (saveTextLocally: boolean) => void;
 };
 
 export function FileMenu({
-  onClearSavedText,
   onExportText,
   onImportText,
   saveTextLocally,
-  onToggleSaveTextLocally,
+  onSaveTextLocallyChange,
 }: FileMenuProps) {
   return (
     <details className="menu-control">
@@ -46,21 +44,30 @@ export function FileMenu({
         </button>
         <label className="menu-control__item menu-control__checkbox-item">
           <input
+            aria-label="Save text"
             checked={saveTextLocally}
             type="checkbox"
-            onChange={onToggleSaveTextLocally}
+            onChange={(event) =>
+              onSaveTextLocallyChange(event.currentTarget.checked)
+            }
           />
           <span>Save text</span>
         </label>
-        <button
-          className="menu-control__item"
-          type="button"
-          role="menuitem"
-          aria-label="Clear saved editor text"
-          onClick={onClearSavedText}
-        >
-          Clear Saved
-        </button>
+        <div className="menu-control__divider" role="separator" />
+        <details className="menu-control__nested">
+          <summary aria-label="Help">Help</summary>
+          <div className="menu-control__help" role="note">
+            <p>Chinese Pinyin</p>
+            <ul>
+              <li>Letters build the buffer.</li>
+              <li>Space commits the selected candidate.</li>
+              <li>Number keys select candidates.</li>
+              <li>Arrow keys move candidate selection.</li>
+              <li>Backspace edits the buffer.</li>
+              <li>Escape cancels the buffer.</li>
+            </ul>
+          </div>
+        </details>
       </div>
     </details>
   );

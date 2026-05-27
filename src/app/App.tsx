@@ -30,19 +30,14 @@ import {
   createEditorAdapter,
   type EditorAdapter,
 } from '../utils/editorAdapter';
+import { clampFontSize } from '../utils/fontSize';
+import {
+  clearSavedEditorText,
+  getInitialEditorText,
+  saveEditorText,
+} from '../utils/localTextPersistence';
 import { exportTextFile, importTextFile } from '../utils/textFile';
 import { calculateTypingStats } from '../utils/typingStats';
-
-const MIN_FONT_SIZE = 14;
-const MAX_FONT_SIZE = 28;
-
-function clampFontSize(fontSize: number): number {
-  if (!Number.isFinite(fontSize)) {
-    return 18;
-  }
-
-  return Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, fontSize));
-}
 
 export function App() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -52,6 +47,7 @@ export function App() {
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const [isSessionTimerRunning, setIsSessionTimerRunning] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  const [editorWarning, setEditorWarning] = useState('');
   const [recoverableText, setRecoverableText] = useState<{
     text: string;
     reason: string;
@@ -80,6 +76,10 @@ export function App() {
     STORAGE_KEYS.saveTextLocally,
     false,
   );
+  const [pinyinShowPageCount, setPinyinShowPageCount] = useLocalStorageState(
+    STORAGE_KEYS.pinyinShowPageCount,
+    true,
+  );
   const activeKeys = useKeyboardTracker();
   const { activeMouseButtons, markMouseButton } = useMouseTracker();
   const chinesePinyin = useChinesePinyinController(inputModeId === 'zh-pinyin');
@@ -97,20 +97,7 @@ export function App() {
     [sessionSeconds, text],
   );
 
-  const initialText = useMemo(() => {
-    if (typeof window === 'undefined') {
-      return '';
-    }
-
-    const shouldRestoreText =
-      window.localStorage.getItem(STORAGE_KEYS.saveTextLocally) === 'true';
-
-    if (!shouldRestoreText) {
-      return '';
-    }
-
-    return window.localStorage.getItem(STORAGE_KEYS.text) ?? '';
-  }, []);
+  const initialText = useMemo(() => getInitialEditorText(), []);
 
   useEffect(() => {
     if (!textareaRef.current) {
@@ -128,7 +115,7 @@ export function App() {
     }
 
     const timeoutId = window.setTimeout(() => {
-      window.localStorage.setItem(STORAGE_KEYS.text, text);
+      saveEditorText(text);
     }, TEXT_PERSIST_DEBOUNCE_MS);
 
     return () => {
@@ -276,10 +263,20 @@ export function App() {
       });
   }, [editor, text]);
 
-  const handleClearSavedText = useCallback(() => {
-    window.localStorage.removeItem(STORAGE_KEYS.text);
-    setStatusMessage('Saved text cleared from this browser.');
-  }, []);
+  const handleSaveTextLocallyChange = useCallback(
+    (shouldSaveTextLocally: boolean) => {
+      setSaveTextLocally(shouldSaveTextLocally);
+
+      if (shouldSaveTextLocally) {
+        setEditorWarning('Text saving enabled for this browser.');
+        return;
+      }
+
+      clearSavedEditorText();
+      setEditorWarning('Text saving disabled and saved text removed.');
+    },
+    [setSaveTextLocally],
+  );
 
   const handleExportText = useCallback(() => {
     try {
@@ -356,13 +353,12 @@ export function App() {
         onMouseVisibleChange={setMouseVisible}
         onClearText={handleClearText}
         onCopyText={handleCopyText}
-        onClearSavedText={handleClearSavedText}
         onExportText={handleExportText}
         onImportText={handleImportText}
         saveTextLocally={saveTextLocally}
-        onToggleSaveTextLocally={() => {
-          setSaveTextLocally((currentValue) => !currentValue);
-        }}
+        onSaveTextLocallyChange={handleSaveTextLocallyChange}
+        pinyinShowPageCount={pinyinShowPageCount}
+        onPinyinShowPageCountChange={setPinyinShowPageCount}
         theme={theme}
         onThemeChange={setTheme}
         fontSize={clampFontSize(fontSize)}
@@ -396,8 +392,11 @@ export function App() {
         ) : null}
         <TextEditor
           defaultValue={initialText}
+          privacyWarning={editorWarning}
           status={`${inputMode.label}${isComposing ? ' composing' : ''}`}
+          text={text}
           ref={textareaRef}
+          onDismissPrivacyWarning={() => setEditorWarning('')}
           onBeforeInput={handleBeforeInput}
           onCompositionEnd={handleCompositionEnd}
           onCompositionStart={handleCompositionStart}
@@ -406,7 +405,10 @@ export function App() {
           onKeyDown={handleKeyDown}
         />
         {inputModeId === 'zh-pinyin' ? (
-          <PinyinCandidateBar viewState={chinesePinyin.viewState} />
+          <PinyinCandidateBar
+            showPageCount={pinyinShowPageCount}
+            viewState={chinesePinyin.viewState}
+          />
         ) : null}
       </section>
 

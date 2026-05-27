@@ -32,7 +32,7 @@ export function StatsBar({
       </div>
       <div className="stats-bar__item">
         <dt>WPM</dt>
-        <dd>{stats.wordsPerMinute}</dd>
+        <dd>{isTimerRunning ? stats.wordsPerMinute : '-'}</dd>
       </div>
       <div className="stats-bar__item">
         <dt>Time</dt>

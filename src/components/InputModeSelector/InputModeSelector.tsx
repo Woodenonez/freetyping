@@ -1,11 +1,18 @@
 import { inputModes } from '../../input/inputManager';
 
 type InputModeSelectorProps = {
+  pinyinShowPageCount: boolean;
   value: string;
   onChange: (inputModeId: string) => void;
+  onPinyinShowPageCountChange: (showPageCount: boolean) => void;
 };
 
-export function InputModeSelector({ value, onChange }: InputModeSelectorProps) {
+export function InputModeSelector({
+  pinyinShowPageCount,
+  value,
+  onChange,
+  onPinyinShowPageCountChange,
+}: InputModeSelectorProps) {
   const [systemMode, ...webModes] = inputModes;
   const currentMode = inputModes.find((mode) => mode.id === value) ?? systemMode;
 
@@ -39,6 +46,22 @@ export function InputModeSelector({ value, onChange }: InputModeSelectorProps) {
             {mode.label}
           </button>
         ))}
+        {currentMode.id === 'zh-pinyin' ? (
+          <>
+            <div className="menu-control__divider" role="separator" />
+            <label className="menu-control__item menu-control__checkbox-item">
+              <input
+                aria-label="Show Pinyin page count"
+                checked={pinyinShowPageCount}
+                type="checkbox"
+                onChange={(event) =>
+                  onPinyinShowPageCountChange(event.currentTarget.checked)
+                }
+              />
+              <span>Show page count</span>
+            </label>
+          </>
+        ) : null}
       </div>
     </details>
   );

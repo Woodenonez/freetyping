@@ -9,6 +9,7 @@ export type AppState = {
   theme: Theme;
   fontSize: number;
   saveTextLocally: boolean;
+  pinyinShowPageCount: boolean;
 };
 
 export const STORAGE_KEYS = {
@@ -19,4 +20,5 @@ export const STORAGE_KEYS = {
   theme: 'freetyping:theme',
   fontSize: 'freetyping:fontSize',
   saveTextLocally: 'freetyping:saveTextLocally',
+  pinyinShowPageCount: 'freetyping:pinyinShowPageCount',
 } as const;

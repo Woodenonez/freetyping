@@ -24,6 +24,7 @@ export function PanelMenu({
       <div className="panel-menu__content">
         <label className="toggle-field">
           <input
+            aria-label="Show keyboard panel"
             checked={keyboardVisible}
             type="checkbox"
             onChange={(event) =>
@@ -34,6 +35,7 @@ export function PanelMenu({
         </label>
         <label className="toggle-field">
           <input
+            aria-label="Show mouse panel"
             checked={mouseVisible}
             type="checkbox"
             onChange={(event) =>

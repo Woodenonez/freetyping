@@ -163,6 +163,7 @@ try {
         document.execCommand('insertText', false, 'hello world');
         await sleep(50);
         const coreEditing = textarea.value;
+        const initialStatsText = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
         textarea.setSelectionRange(6, 11);
         document.execCommand('insertText', false, 'there');
@@ -183,11 +184,21 @@ try {
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         await sleep(450);
         const persisted = localStorage.getItem('freetyping:text') === 'persist me';
+        saveText.click();
+        await sleep(50);
+        const savedTextRemovedWhenDisabled = localStorage.getItem('freetyping:text') === null;
+        const saveWarning = document.querySelector('.text-editor__warning')?.textContent ?? '';
+        document.querySelector('button[aria-label="Dismiss warning"]')?.click();
+        await sleep(50);
+        const saveWarningDismissed = !document.querySelector('.text-editor__warning');
 
         const inputSummary = document.querySelector('summary[aria-label="Choose input mode"]');
         inputSummary.click();
         inputSummary.parentElement.querySelectorAll('.menu-control__item')[2].click();
         await sleep(50);
+        const pageCountCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Show Pinyin page count"]');
+        const pinyinSettingsVisible = Boolean(pageCountCheckbox);
+        if (!pageCountCheckbox?.checked) pageCountCheckbox?.click();
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         const press = async (key, code = '') => {
@@ -199,6 +210,18 @@ try {
         await press(' ', 'Space');
         const pinyin = textarea.value;
 
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        for (const char of 'shi') await press(char, 'Key' + char.toUpperCase());
+        await sleep(50);
+        const visibleCandidateCount = document.querySelectorAll('.pinyin-bar__candidate').length;
+        const firstCandidatePage = document.querySelector('.pinyin-bar__page')?.textContent ?? '';
+        await press('ArrowDown', 'ArrowDown');
+        await sleep(50);
+        const lastCandidatePage = document.querySelector('.pinyin-bar__page')?.textContent ?? '';
+        await press('1', 'Digit1');
+        const pagedPinyin = textarea.value;
+
         const clearButton = document.querySelector('button[aria-label="Clear editor text"]');
         clearButton.click();
         await sleep(50);
@@ -208,16 +231,43 @@ try {
         await sleep(50);
         const recovered = textarea.value;
 
+        textarea.value = '# Notes\nline one\nline two\n\nafter';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        await sleep(50);
+        const foldButton = document.querySelector('button[aria-label="Fold Notes"]');
+        const foldButtonVisible = Boolean(foldButton);
+        foldButton?.click();
+        await sleep(50);
+        const foldedValue = textarea.value;
+        const foldBadge = document.querySelector('.text-editor__fold-badge')?.textContent ?? '';
+        const unfoldButton = document.querySelector('button[aria-label="Unfold Notes"]');
+        unfoldButton?.click();
+        await sleep(50);
+        const unfoldedValue = textarea.value;
+
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
         return {
           coreEditing,
+          initialStatsText,
           replaceEditing,
           virtualKeyboard,
           persisted,
+          savedTextRemovedWhenDisabled,
+          saveWarning,
+          saveWarningDismissed,
+          pinyinSettingsVisible,
           pinyin,
+          visibleCandidateCount,
+          firstCandidatePage,
+          lastCandidatePage,
+          pagedPinyin,
           recoveryVisible,
           recovered,
+          foldButtonVisible,
+          foldedValue,
+          foldBadge,
+          unfoldedValue,
           stats,
         };
       })()
@@ -225,12 +275,31 @@ try {
   );
 
   assert(result.coreEditing === 'hello world', 'Core typing failed.');
+  assert(result.initialStatsText.includes('WPM-'), 'WPM should be hidden while timer is stopped.');
   assert(result.replaceEditing === 'hello there', 'Select/replace editing failed.');
   assert(result.virtualKeyboard, 'Virtual keyboard insertion failed.');
   assert(result.persisted, 'Persistence failed.');
+  assert(result.savedTextRemovedWhenDisabled, 'Disabling local save did not remove saved text.');
+  assert(result.saveWarning.includes('Text saving disabled'), 'Save warning did not appear in editor.');
+  assert(result.saveWarningDismissed, 'Save warning could not be dismissed.');
+  assert(result.pinyinSettingsVisible, 'Pinyin settings menu did not appear.');
   assert(result.pinyin === '尼', 'Pinyin candidate selection failed.');
+  assert(result.visibleCandidateCount === 9, 'Pinyin candidates were not paginated.');
+  assert(result.firstCandidatePage === '1/2', 'First candidate page did not render.');
+  assert(result.lastCandidatePage === '2/2', 'ArrowDown did not move to the final candidate page.');
+  assert(result.pagedPinyin === '识', 'Number selection did not use the visible candidate page.');
   assert(result.recoveryVisible, 'Recovery control did not appear.');
-  assert(result.recovered === '尼', 'Recovery restore failed.');
+  assert(result.recovered === '识', 'Recovery restore failed.');
+  assert(result.foldButtonVisible, 'Fold control did not appear for # title section.');
+  assert(
+    result.foldedValue === '# Notes\n\nafter',
+    'Fold did not collapse body lines out of the textarea.',
+  );
+  assert(result.foldBadge.includes('2 folded lines'), 'Fold badge did not appear.');
+  assert(
+    result.unfoldedValue === '# Notes\nline one\nline two\n\nafter',
+    'Unfold did not restore the folded body text.',
+  );
   assert(result.stats.includes('Chars'), 'Stats did not render.');
 
   await captureViewport(send, 'desktop', 1280, 900);

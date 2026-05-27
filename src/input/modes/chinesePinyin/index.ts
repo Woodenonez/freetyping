@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { InputMode } from '../../types';
-import { getPinyinCandidates } from './candidates';
+import {
+  getCandidatePageState,
+  getPinyinCandidates,
+} from './candidates';
 
 export const chinesePinyinInputMode: InputMode = {
   id: 'zh-pinyin',
@@ -12,13 +15,21 @@ export const chinesePinyinInputMode: InputMode = {
 export type ChinesePinyinViewState = {
   buffer: string;
   candidates: string[];
+  pageCount: number;
+  pageIndex: number;
+  pageStartIndex: number;
   selectedCandidateIndex: number;
+  visibleCandidates: string[];
 };
 
 const emptyViewState: ChinesePinyinViewState = {
   buffer: '',
   candidates: [],
+  pageCount: 0,
+  pageIndex: 0,
+  pageStartIndex: 0,
   selectedCandidateIndex: 0,
+  visibleCandidates: [],
 };
 
 function isLetterKey(event: KeyboardEvent): boolean {
@@ -52,9 +63,11 @@ export function useChinesePinyinController(active: boolean): {
 
   const updateBuffer = useCallback((buffer: string) => {
     const candidates = getPinyinCandidates(buffer);
+    const pageState = getCandidatePageState(candidates, 0);
     setViewState({
       buffer,
       candidates,
+      ...pageState,
       selectedCandidateIndex: 0,
     });
   }, []);
@@ -70,9 +83,14 @@ export function useChinesePinyinController(active: boolean): {
         0,
         Math.min(selectedCandidateIndex, lastCandidateIndex),
       );
+      const pageState = getCandidatePageState(
+        currentState.candidates,
+        nextSelectedCandidateIndex,
+      );
 
       return {
         ...currentState,
+        ...pageState,
         selectedCandidateIndex: nextSelectedCandidateIndex,
       };
     });
@@ -164,7 +182,8 @@ export function useChinesePinyinController(active: boolean): {
         }
 
         if (isNumberSelectionKey(event)) {
-          const candidateIndex = Number(event.key) - 1;
+          const candidateIndex =
+            viewState.pageStartIndex + Number(event.key) - 1;
           const candidate = viewState.candidates[candidateIndex];
 
           if (!candidate) {
