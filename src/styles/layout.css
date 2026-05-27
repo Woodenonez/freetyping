@@ -1,0 +1,85 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  color: var(--color-text);
+  background: var(--color-page);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.top-bar__controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.editor-region {
+  display: grid;
+  grid-template-rows: auto minmax(18rem, 1fr);
+  gap: 0.75rem;
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.virtual-panel {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  padding: 0 1rem 1rem;
+}
+
+.virtual-input-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.virtual-input-panel:has(.virtual-keyboard + .virtual-mouse) {
+  grid-template-columns: minmax(0, 1fr) minmax(8rem, 12rem);
+}
+
+@media (max-width: 720px) {
+  .top-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .top-bar__controls {
+    align-items: stretch;
+  }
+
+  .field,
+  .menu-control,
+  .panel-menu,
+  .help-menu,
+  .file-button,
+  .toggle-field {
+    justify-content: space-between;
+  }
+
+  .virtual-input-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .editor-region,
+  .virtual-panel {
+    padding-inline: 0.65rem;
+  }
+
+  .top-bar {
+    padding-inline: 0.65rem;
+  }
+}
