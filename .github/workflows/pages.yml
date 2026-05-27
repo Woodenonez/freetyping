@@ -48,7 +48,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin gh-pages || true
           git switch --orphan gh-pages
-          git rm -rf .
+          git rm -rf . || true
           cp -a /tmp/freetyping-pages/. .
           git add -f .
           git diff --cached --quiet && exit 0
