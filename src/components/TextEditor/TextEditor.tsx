@@ -114,15 +114,18 @@ export const TextEditor = forwardRef<HTMLTextAreaElement, TextEditorProps>(
           />
           <span className="text-editor__fold-layer">
             {foldControls.map((foldControl) => (
-              <span className="text-editor__fold-item" key={foldControl.id}>
+              <span
+                className="text-editor__fold-item"
+                key={foldControl.id}
+                style={{
+                  top: `${foldControl.titleTop}px`,
+                  left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 1, 56)}ch)`,
+                }}
+              >
                 <button
                   type="button"
                   className="text-editor__fold-toggle"
                   aria-label={`${foldControl.isFolded ? 'Unfold' : 'Fold'} ${foldControl.title}`}
-                  style={{
-                    top: `${foldControl.titleTop}px`,
-                    left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 1, 56)}ch)`,
-                  }}
                   onClick={foldControl.toggle}
                 >
                   {foldControl.isFolded ? '▸' : '▾'}
@@ -131,10 +134,6 @@ export const TextEditor = forwardRef<HTMLTextAreaElement, TextEditorProps>(
                   <span
                     className="text-editor__fold-badge"
                     aria-hidden="true"
-                    style={{
-                      top: `${foldControl.titleTop}px`,
-                      left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 4, 60)}ch)`,
-                    }}
                   >
                     {foldControl.badgeLabel}
                   </span>

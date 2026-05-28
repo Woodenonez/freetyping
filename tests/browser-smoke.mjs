@@ -253,7 +253,11 @@ try {
         foldButton?.click();
         await sleep(50);
         const foldedValue = textarea.value;
-        const foldBadge = document.querySelector('.text-editor__fold-badge')?.textContent ?? '';
+        const foldedButton = document.querySelector('button[aria-label="Unfold Notes"]');
+        const foldBadgeElement = document.querySelector('.text-editor__fold-badge');
+        const foldBadge = foldBadgeElement?.textContent ?? '';
+        const foldedButtonRight = foldedButton?.getBoundingClientRect().right ?? 0;
+        const foldBadgeLeft = foldBadgeElement?.getBoundingClientRect().left ?? 0;
         const unfoldButton = document.querySelector('button[aria-label="Unfold Notes"]');
         unfoldButton?.click();
         await sleep(50);
@@ -264,7 +268,7 @@ try {
         await sleep(50);
         const chineseFoldButton = document.querySelector('button[aria-label="Fold 标题"]');
         const chineseFoldLeft = chineseFoldButton
-          ? Number.parseFloat(window.getComputedStyle(chineseFoldButton).left)
+          ? chineseFoldButton.getBoundingClientRect().left
           : 0;
 
         textarea.value = '# abc\none\n\n';
@@ -272,7 +276,7 @@ try {
         await sleep(50);
         const englishFoldButton = document.querySelector('button[aria-label="Fold abc"]');
         const englishFoldLeft = englishFoldButton
-          ? Number.parseFloat(window.getComputedStyle(englishFoldButton).left)
+          ? englishFoldButton.getBoundingClientRect().left
           : 0;
 
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
@@ -300,6 +304,8 @@ try {
           foldButtonVisible,
           foldedValue,
           foldBadge,
+          foldedButtonRight,
+          foldBadgeLeft,
           unfoldedValue,
           chineseFoldLeft,
           englishFoldLeft,
@@ -334,6 +340,10 @@ try {
     'Fold did not collapse body lines out of the textarea.',
   );
   assert(result.foldBadge.includes('2 folded lines'), 'Fold badge did not appear.');
+  assert(
+    result.foldBadgeLeft > result.foldedButtonRight,
+    'Fold badge did not appear after the fold button.',
+  );
   assert(
     result.unfoldedValue === '# Notes\nline one\nline two\n\nafter',
     'Unfold did not restore the folded body text.',

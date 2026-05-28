@@ -470,9 +470,16 @@
   pointer-events: none;
 }
 
-.text-editor__fold-toggle {
+.text-editor__fold-item {
   position: absolute;
   z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  pointer-events: none;
+}
+
+.text-editor__fold-toggle {
   min-width: 1.15em;
   min-height: 1.15em;
   width: 1.15em;
@@ -495,8 +502,6 @@
 }
 
 .text-editor__fold-badge {
-  position: absolute;
-  z-index: 3;
   max-width: 12rem;
   min-height: 1.35em;
   display: flex;
