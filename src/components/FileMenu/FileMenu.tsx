@@ -55,6 +55,16 @@ export function FileMenu({
         </label>
         <div className="menu-control__divider" role="separator" />
         <details className="menu-control__nested">
+          <summary aria-label="About">About</summary>
+          <div className="menu-control__help" role="note">
+            <p>FreeTyping</p>
+            <p>
+              A local-first typing workspace for plain text editing, input
+              practice, keyboard feedback, and browser-based Chinese Pinyin.
+            </p>
+          </div>
+        </details>
+        <details className="menu-control__nested">
           <summary aria-label="Help">Help</summary>
           <div className="menu-control__help" role="note">
             <p>Chinese Pinyin</p>

@@ -178,6 +178,11 @@ try {
         const fileSummary = document.querySelector('summary[aria-label="File actions"]');
         fileSummary.click();
         const saveText = Array.from(fileSummary.parentElement.querySelectorAll('.menu-control__checkbox-item input'))[0];
+        const saveTextUncheckedByDefault = saveText?.checked === false;
+        const aboutSummary = fileSummary.parentElement.querySelector('summary[aria-label="About"]');
+        aboutSummary?.click();
+        await sleep(50);
+        const aboutText = aboutSummary?.parentElement?.textContent ?? '';
         saveText.click();
         await sleep(50);
         textarea.value = 'persist me';
@@ -301,6 +306,8 @@ try {
           initialStatsText,
           replaceEditing,
           virtualKeyboard,
+          saveTextUncheckedByDefault,
+          aboutText,
           persisted,
           savedTextRemovedWhenDisabled,
           saveWarning,
@@ -335,6 +342,9 @@ try {
   assert(result.initialStatsText.includes('WPM-'), 'WPM should be hidden while timer is stopped.');
   assert(result.replaceEditing === 'hello there', 'Select/replace editing failed.');
   assert(result.virtualKeyboard, 'Virtual keyboard insertion failed.');
+  assert(result.saveTextUncheckedByDefault, 'Save text should be unchecked by default.');
+  assert(result.aboutText.includes('FreeTyping'), 'About menu did not appear.');
+  assert(result.aboutText.includes('local-first typing workspace'), 'About menu text was missing.');
   assert(result.persisted, 'Persistence failed.');
   assert(result.savedTextRemovedWhenDisabled, 'Disabling local save did not remove saved text.');
   assert(result.saveWarning.includes('Text saving disabled'), 'Save warning did not appear in editor.');

@@ -149,7 +149,7 @@ For local development and normal static hosting, no environment variable is need
 6. Select and replace text in the editor.
 7. Use browser undo and redo.
 8. Open the `Input Mode` menu and confirm `System Input` is first, followed by a divider.
-9. Open the `File` menu and confirm it contains `Import`, `Export`, `Save text`, and `Help`.
+9. Open the `File` menu and confirm it contains `Import`, `Export`, `Save text`, `About`, and `Help`.
 10. Open the Panel dropdown and separately toggle Keyboard and Mouse.
 11. Press physical keys and confirm matching virtual keys highlight when Keyboard is enabled.
 12. Click virtual character keys and confirm text inserts into the editor.
