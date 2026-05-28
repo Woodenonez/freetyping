@@ -119,7 +119,7 @@ export const TextEditor = forwardRef<HTMLTextAreaElement, TextEditorProps>(
                 key={foldControl.id}
                 style={{
                   top: `${foldControl.titleTop}px`,
-                  left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 1, 56)}ch)`,
+                  left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 3, 58)}ch)`,
                 }}
               >
                 <button

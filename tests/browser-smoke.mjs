@@ -278,6 +278,21 @@ try {
         const englishFoldLeft = englishFoldButton
           ? englishFoldButton.getBoundingClientRect().left
           : 0;
+        const englishTitleWidth = (() => {
+          const measurer = document.createElement('span');
+          const textareaStyles = window.getComputedStyle(textarea);
+          measurer.textContent = '# abc';
+          measurer.style.font = textareaStyles.font;
+          measurer.style.position = 'absolute';
+          measurer.style.visibility = 'hidden';
+          measurer.style.whiteSpace = 'pre';
+          document.body.appendChild(measurer);
+          const width = measurer.getBoundingClientRect().width;
+          measurer.remove();
+          return width;
+        })();
+        const englishTitleEnd =
+          textarea.getBoundingClientRect().left + 16 + englishTitleWidth;
 
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
@@ -309,6 +324,7 @@ try {
           unfoldedValue,
           chineseFoldLeft,
           englishFoldLeft,
+          englishTitleEnd,
           stats,
         };
       })()
@@ -351,6 +367,10 @@ try {
   assert(
     result.chineseFoldLeft > result.englishFoldLeft,
     'Chinese fold title did not reserve double-width spacing.',
+  );
+  assert(
+    result.englishFoldLeft - result.englishTitleEnd > 8,
+    'English fold control is too close to the title.',
   );
   assert(result.stats.includes('Chars'), 'Stats did not render.');
 
