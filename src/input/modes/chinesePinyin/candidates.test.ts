@@ -3,6 +3,7 @@ import {
   PINYIN_CANDIDATE_PAGE_SIZE,
   getCandidatePageState,
   getPinyinCandidates,
+  installGeneratedPinyinDictionary,
 } from './candidates';
 
 describe('getPinyinCandidates', () => {
@@ -32,6 +33,21 @@ describe('getPinyinCandidates', () => {
 
   it('does not use fuzzy matching unless enabled', () => {
     expect(getPinyinCandidates('si')).not.toContain('是');
+  });
+
+  it('installs generated dictionary entries for wider coverage', () => {
+    installGeneratedPinyinDictionary({
+      source: 'test',
+      license: 'Apache-2.0',
+      generatedAt: '2026-05-28T00:00:00.000Z',
+      keyCount: 1,
+      entryCount: 1,
+      entries: {
+        ceshi: [['测试', 9000]],
+      },
+    });
+
+    expect(getPinyinCandidates('ceshi').at(0)).toBe('测试');
   });
 });
 

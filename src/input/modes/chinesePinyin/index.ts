@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { InputMode } from '../../types';
 import {
   getCandidatePageState,
   getPinyinCandidates,
 } from './candidates';
+import { loadGeneratedPinyinDictionary } from './dictionaryLoader';
 
 export const chinesePinyinInputMode: InputMode = {
   id: 'zh-pinyin',
@@ -15,6 +16,7 @@ export const chinesePinyinInputMode: InputMode = {
 export type ChinesePinyinViewState = {
   buffer: string;
   candidates: string[];
+  dictionaryStatus: 'idle' | 'loading' | 'ready' | 'error';
   pageCount: number;
   pageIndex: number;
   pageStartIndex: number;
@@ -25,6 +27,7 @@ export type ChinesePinyinViewState = {
 const emptyViewState: ChinesePinyinViewState = {
   buffer: '',
   candidates: [],
+  dictionaryStatus: 'idle',
   pageCount: 0,
   pageIndex: 0,
   pageStartIndex: 0,
@@ -87,7 +90,10 @@ export function useChinesePinyinController(
     useState<ChinesePinyinViewState>(emptyViewState);
 
   const reset = useCallback(() => {
-    setViewState(emptyViewState);
+    setViewState((currentState) => ({
+      ...emptyViewState,
+      dictionaryStatus: currentState.dictionaryStatus,
+    }));
   }, []);
 
   const updateBuffer = useCallback((buffer: string) => {
@@ -96,12 +102,55 @@ export function useChinesePinyinController(
     });
     const pageState = getCandidatePageState(candidates, 0);
     setViewState({
+      dictionaryStatus: viewState.dictionaryStatus,
       buffer,
       candidates,
       ...pageState,
       selectedCandidateIndex: 0,
     });
-  }, [options.fuzzyMatching]);
+  }, [options.fuzzyMatching, viewState.dictionaryStatus]);
+
+  useEffect(() => {
+    if (!active || viewState.dictionaryStatus !== 'idle') {
+      return;
+    }
+
+    setViewState((currentState) => ({
+      ...currentState,
+      dictionaryStatus: 'loading',
+    }));
+
+    void loadGeneratedPinyinDictionary()
+      .then(() => {
+        setViewState((currentState) => {
+          const candidates = getPinyinCandidates(currentState.buffer, {
+            fuzzyMatching: options.fuzzyMatching,
+          });
+          const selectedCandidateIndex = Math.min(
+            currentState.selectedCandidateIndex,
+            Math.max(0, candidates.length - 1),
+          );
+          const pageState = getCandidatePageState(
+            candidates,
+            selectedCandidateIndex,
+          );
+
+          return {
+            ...currentState,
+            ...pageState,
+            candidates,
+            dictionaryStatus: 'ready',
+            selectedCandidateIndex,
+          };
+        });
+      })
+      .catch(() => {
+        setViewState((currentState) => ({
+          ...currentState,
+          dictionaryStatus: 'error',
+        }));
+      });
+  }, [active, options.fuzzyMatching, viewState.dictionaryStatus]);
 
   const selectCandidate = useCallback((selectedCandidateIndex: number) => {
     setViewState((currentState) => {

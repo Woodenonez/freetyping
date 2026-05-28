@@ -35,7 +35,7 @@ textarea {
 button,
 select,
 input[type='number'] {
-  min-height: 2.25rem;
+  min-height: 1.85rem;
 }
 
 button {

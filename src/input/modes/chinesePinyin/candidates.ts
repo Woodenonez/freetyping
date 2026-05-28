@@ -1,5 +1,7 @@
 import {
+  createEntriesFromGeneratedDictionary,
   pinyinDictionaryEntries,
+  type PinyinGeneratedDictionary,
   type PinyinDictionaryEntry,
 } from './dictionary';
 
@@ -25,25 +27,50 @@ type RankedCandidate = {
   text: string;
 };
 
-const entriesByKey = pinyinDictionaryEntries.reduce(
-  (entryMap, entry) => {
-    const entries = entryMap.get(entry.key) ?? [];
-    entries.push(entry);
-    entryMap.set(entry.key, entries);
-    return entryMap;
-  },
-  new Map<string, PinyinDictionaryEntry[]>(),
-);
+let activeDictionaryEntries = pinyinDictionaryEntries;
+let entriesByKey = buildEntriesByKey(activeDictionaryEntries);
+let dictionaryKeys = buildDictionaryKeys(entriesByKey);
 
-for (const entries of entriesByKey.values()) {
-  entries.sort(
-    (firstEntry, secondEntry) => secondEntry.frequency - firstEntry.frequency,
+function buildEntriesByKey(
+  dictionaryEntries: PinyinDictionaryEntry[],
+): Map<string, PinyinDictionaryEntry[]> {
+  const entryMap = dictionaryEntries.reduce(
+    (entryMap, entry) => {
+      const entries = entryMap.get(entry.key) ?? [];
+      entries.push(entry);
+      entryMap.set(entry.key, entries);
+      return entryMap;
+    },
+    new Map<string, PinyinDictionaryEntry[]>(),
+  );
+
+  for (const entries of entryMap.values()) {
+    entries.sort(
+      (firstEntry, secondEntry) => secondEntry.frequency - firstEntry.frequency,
+    );
+  }
+
+  return entryMap;
+}
+
+function buildDictionaryKeys(
+  entryMap: Map<string, PinyinDictionaryEntry[]>,
+): string[] {
+  return [...entryMap.keys()].sort(
+    (firstKey, secondKey) => secondKey.length - firstKey.length,
   );
 }
 
-const dictionaryKeys = [...entriesByKey.keys()].sort(
-  (firstKey, secondKey) => secondKey.length - firstKey.length,
-);
+export function installGeneratedPinyinDictionary(
+  dictionary: PinyinGeneratedDictionary,
+): void {
+  activeDictionaryEntries = [
+    ...createEntriesFromGeneratedDictionary(dictionary),
+    ...pinyinDictionaryEntries,
+  ];
+  entriesByKey = buildEntriesByKey(activeDictionaryEntries);
+  dictionaryKeys = buildDictionaryKeys(entriesByKey);
+}
 
 function normalizeBuffer(buffer: string): string {
   return buffer.trim().toLowerCase();

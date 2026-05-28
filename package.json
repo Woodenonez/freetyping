@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pinyin-dictionary": "node scripts/build-pinyin-dictionary.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:a11y": "npm run build && node tests/browser-audit.mjs",

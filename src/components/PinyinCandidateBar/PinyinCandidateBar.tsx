@@ -44,6 +44,10 @@ export function PinyinCandidateBar({
             </div>
           ) : null}
         </>
+      ) : viewState.dictionaryStatus === 'loading' ? (
+        <div className="pinyin-bar__empty">Loading dictionary</div>
+      ) : viewState.dictionaryStatus === 'error' ? (
+        <div className="pinyin-bar__empty">Dictionary unavailable</div>
       ) : (
         <div className="pinyin-bar__empty">Space commits plain text</div>
       )}

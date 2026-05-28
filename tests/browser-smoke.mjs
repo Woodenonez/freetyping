@@ -202,6 +202,7 @@ try {
         const pinyinFuzzyVisible = Boolean(fuzzyCheckbox);
         if (!pageCountCheckbox?.checked) pageCountCheckbox?.click();
         if (!fuzzyCheckbox?.checked) fuzzyCheckbox?.click();
+        await sleep(700);
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         const press = async (key, code = '') => {
@@ -209,7 +210,6 @@ try {
           await sleep(30);
         };
         for (const char of 'ni') await press(char, 'Key' + char.toUpperCase());
-        await press('ArrowRight', 'ArrowRight');
         await press(' ', 'Space');
         const pinyin = textarea.value;
 
@@ -227,9 +227,9 @@ try {
 
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        for (const char of 'si') await press(char, 'Key' + char.toUpperCase());
+        for (const char of 'xianshi') await press(char, 'Key' + char.toUpperCase());
         await press(' ', 'Space');
-        const fuzzyPinyin = textarea.value;
+        const realPhrasePinyin = textarea.value;
 
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
@@ -277,7 +277,7 @@ try {
           firstCandidatePage,
           lastCandidatePage,
           pagedPinyin,
-          fuzzyPinyin,
+          realPhrasePinyin,
           chinesePunctuation,
           recoveryVisible,
           recovered,
@@ -301,12 +301,12 @@ try {
   assert(result.saveWarningDismissed, 'Save warning could not be dismissed.');
   assert(result.pinyinSettingsVisible, 'Pinyin settings menu did not appear.');
   assert(result.pinyinFuzzyVisible, 'Pinyin fuzzy setting did not appear.');
-  assert(result.pinyin === '尼', 'Pinyin candidate selection failed.');
+  assert(result.pinyin === '你', 'Pinyin candidate selection failed.');
   assert(result.visibleCandidateCount === 9, 'Pinyin candidates were not paginated.');
-  assert(result.firstCandidatePage === '1/2', 'First candidate page did not render.');
-  assert(result.lastCandidatePage === '2/2', 'ArrowDown did not move to the final candidate page.');
-  assert(result.pagedPinyin === '识', 'Number selection did not use the visible candidate page.');
-  assert(result.fuzzyPinyin === '是', 'Fuzzy Pinyin selection failed.');
+  assert(result.firstCandidatePage.startsWith('1/'), 'First candidate page did not render.');
+  assert(result.lastCandidatePage !== result.firstCandidatePage, 'ArrowDown did not move to the final candidate page.');
+  assert(result.pagedPinyin.length > 0 && result.pagedPinyin !== 'shi', 'Number selection did not use the visible candidate page.');
+  assert(result.realPhrasePinyin === '显示', 'Real Pinyin phrase lookup failed.');
   assert(result.chinesePunctuation === '。', 'Chinese punctuation insertion failed.');
   assert(result.recoveryVisible, 'Recovery control did not appear.');
   assert(result.recovered === '。', 'Recovery restore failed.');

@@ -3,7 +3,16 @@ export type PinyinDictionaryEntry = {
   text: string;
   frequency: number;
   phraseLength: number;
-  source: 'builtin';
+  source: 'builtin' | 'rime-pinyin-simp';
+};
+
+export type PinyinGeneratedDictionary = {
+  source: string;
+  license: string;
+  generatedAt: string;
+  keyCount: number;
+  entryCount: number;
+  entries: Record<string, [string, number][]>;
 };
 
 const singleCharacterEntries = {
@@ -71,3 +80,17 @@ export const pinyinDictionaryEntries: PinyinDictionaryEntry[] = [
   ...createSingleCharacterEntries(),
   ...createPhraseEntries(),
 ];
+
+export function createEntriesFromGeneratedDictionary(
+  dictionary: PinyinGeneratedDictionary,
+): PinyinDictionaryEntry[] {
+  return Object.entries(dictionary.entries).flatMap(([key, entries]) =>
+    entries.map(([text, frequency]) => ({
+      key,
+      text,
+      frequency,
+      phraseLength: Array.from(text).length,
+      source: 'rime-pinyin-simp' as const,
+    })),
+  );
+}

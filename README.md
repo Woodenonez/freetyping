@@ -4,7 +4,7 @@ A lightweight static typing app built with Vite, React, and TypeScript.
 
 ## Current Version
 
-V3 Chinese Pinyin module slice.
+V4 real Pinyin dictionary slice.
 
 Implemented:
 
@@ -17,6 +17,7 @@ Implemented:
 - Persistent input mode, keyboard panel visibility, mouse panel visibility, save-text setting, and theme
 - System and English Direct input modes
 - Structured Chinese Pinyin input mode
+- Lazy-loaded Apache-2.0 Pinyin dictionary generated from `rime-pinyin-simp`
 - Pinyin composition buffer and candidate row
 - Space commit, number selection, arrow navigation, Backspace edit, and Escape cancel
 - Frequency-ranked candidates
@@ -42,7 +43,6 @@ Implemented:
 
 Not implemented yet:
 
-- Licensed large-corpus Chinese Pinyin dictionary import
 - Full mobile optimization
 - Full automated browser test coverage
 
@@ -81,6 +81,20 @@ The static production files are written to:
 dist/
 ```
 
+## Rebuild Pinyin Dictionary
+
+```bash
+npm run build:pinyin-dictionary
+```
+
+This downloads `pinyin_simp.dict.yaml` from `rime/rime-pinyin-simp`, parses it, and writes:
+
+```text
+public/data/pinyin-dictionary.json
+```
+
+The generated dictionary is loaded by the browser only when Chinese Pinyin mode is active.
+
 ## Preview Production Build
 
 ```bash
@@ -116,7 +130,7 @@ GITHUB_PAGES_BASE=/freetyping/ npm run build
 
 For local development and normal static hosting, no environment variable is needed.
 
-## V3 Manual Check
+## V4 Manual Check
 
 1. Run `npm install`.
 2. Run `npm run dev`.
@@ -147,9 +161,9 @@ For local development and normal static hosting, no environment variable is need
 18. Disable `Save text` and confirm persisted editor text is removed.
 19. Select `Chinese Pinyin`.
 20. Type `nihao`, then press `Space`; confirm `你好` is inserted.
-21. Type `ni`, then press `2`; confirm `尼` is inserted.
-22. Type `ni`, press `ArrowRight`, then press `Space`; confirm `尼` is inserted.
-23. Type `ni`, press `ArrowDown`, then press `Space`; confirm `尼` is inserted.
+21. Type `ni`, then press `Space`; confirm `你` is inserted.
+22. Type `ni`, press `ArrowRight`, then press `Space`; confirm the second ranked candidate is inserted.
+23. Type `shi`, press `ArrowDown`, then press `Space`; confirm a candidate from the final page is inserted.
 24. Type `ni`, press `ArrowRight`, press `ArrowUp`, then press `Space`; confirm `你` is inserted.
 25. Type `zz`, then press `Space`; confirm `zz` is inserted as plain text.
 26. Type `ni`, then press `Backspace`; confirm the buffer changes to `n`.
@@ -172,10 +186,12 @@ For local development and normal static hosting, no environment variable is need
 43. Run `npm run build`.
 44. Run `GITHUB_PAGES_BASE=/freetyping/ npm run build`.
 45. Run `npm run preview`.
-46. Open the preview URL and confirm the same V3 UI appears.
+46. Open the preview URL and confirm the same V4 UI appears.
 
 ## Pinyin Data And Privacy
 
-The current V3 Pinyin data is a small built-in sample dictionary maintained in source code. It is structured for a future licensed corpus import, but it is not yet a complete production Chinese IME dictionary.
+The current V4 Pinyin dictionary is generated from `rime/rime-pinyin-simp`, licensed under Apache License 2.0. The source attribution and license copy are kept in `third_party/rime-pinyin-simp/`.
 
-Pinyin preferences are stored in local browser storage. Candidate lookup runs in the browser and does not send typed text to a server.
+The app also keeps a small built-in fallback dictionary and phrase layer in source code so Pinyin still works before the generated dictionary finishes loading.
+
+Pinyin preferences are stored in local browser storage. Candidate lookup runs in the browser and does not send typed text to a server. FreeTyping does not store custom Pinyin dictionaries or learned phrases.
