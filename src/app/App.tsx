@@ -8,8 +8,14 @@ import {
   type CSSProperties,
   type MouseEvent,
 } from 'react';
-import { STORAGE_KEYS, type Theme } from './appState';
+import { STORAGE_KEYS, type KeyboardLayoutId, type Theme } from './appState';
 import { TEXT_PERSIST_DEBOUNCE_MS } from './config';
+import {
+  parsePanelAppearance,
+  parsePanelSkin,
+  type PanelAppearance,
+  type PanelSkin,
+} from './panelAppearance';
 import { PinyinCandidateBar } from '../components/PinyinCandidateBar/PinyinCandidateBar';
 import { RecoveryBar } from '../components/RecoveryBar/RecoveryBar';
 import { StatsBar } from '../components/StatsBar/StatsBar';
@@ -19,6 +25,10 @@ import { VirtualInputPanel } from '../components/VirtualInputPanel/VirtualInputP
 import { useKeyboardTracker } from '../hooks/useKeyboardTracker';
 import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { useMouseTracker } from '../hooks/useMouseTracker';
+import {
+  getKeyboardLayout,
+  parseKeyboardLayoutId,
+} from '../keyboard/layouts';
 import {
   applyInputResult,
   createInputContext,
@@ -64,6 +74,20 @@ export function App() {
     STORAGE_KEYS.mouseVisible,
     true,
   );
+  const [keyboardLayoutSetting, setKeyboardLayoutSetting] =
+    useLocalStorageState<KeyboardLayoutId>(
+      STORAGE_KEYS.keyboardLayoutId,
+      'qwerty',
+    );
+  const [panelAppearanceSetting, setPanelAppearanceSetting] =
+    useLocalStorageState<PanelAppearance>(
+      STORAGE_KEYS.panelAppearance,
+      'simple',
+    );
+  const [panelSkinSetting, setPanelSkinSetting] = useLocalStorageState<PanelSkin>(
+    STORAGE_KEYS.panelSkin,
+    'classic-light',
+  );
   const [theme, setTheme] = useLocalStorageState<Theme>(
     STORAGE_KEYS.theme,
     'light',
@@ -86,6 +110,10 @@ export function App() {
   );
   const activeKeys = useKeyboardTracker();
   const { activeMouseButtons, markMouseButton } = useMouseTracker();
+  const keyboardLayoutId = parseKeyboardLayoutId(keyboardLayoutSetting);
+  const keyboardLayout = getKeyboardLayout(keyboardLayoutId);
+  const panelAppearance = parsePanelAppearance(panelAppearanceSetting);
+  const panelSkin = parsePanelSkin(panelSkinSetting);
   const chinesePinyin = useChinesePinyinController(inputModeId === 'zh-pinyin', {
     fuzzyMatching: pinyinFuzzyMatching,
   });
@@ -97,6 +125,22 @@ export function App() {
 
     return getInputMode(inputModeId);
   }, [chinesePinyin.inputMode, inputModeId]);
+
+  useEffect(() => {
+    if (
+      keyboardLayoutId !== 'nordic' ||
+      inputModeId === 'system' ||
+      inputModeId === 'nordic-direct'
+    ) {
+      return;
+    }
+
+    if (inputModeId === 'zh-pinyin') {
+      chinesePinyin.reset();
+    }
+
+    setInputModeId('nordic-direct');
+  }, [chinesePinyin, inputModeId, keyboardLayoutId, setInputModeId]);
 
   const typingStats = useMemo(
     () => calculateTypingStats(text, sessionSeconds),
@@ -328,10 +372,49 @@ export function App() {
         chinesePinyin.reset();
       }
 
+      if (nextInputModeId === 'en-direct' || nextInputModeId === 'zh-pinyin') {
+        setKeyboardLayoutSetting('qwerty');
+      }
+
       setInputModeId(nextInputModeId);
       editor?.focus();
     },
-    [chinesePinyin, editor, inputModeId, setInputModeId],
+    [
+      chinesePinyin,
+      editor,
+      inputModeId,
+      setInputModeId,
+      setKeyboardLayoutSetting,
+    ],
+  );
+
+  const handleKeyboardLayoutChange = useCallback(
+    (nextLayoutId: KeyboardLayoutId) => {
+      setKeyboardLayoutSetting(nextLayoutId);
+
+      if (nextLayoutId === 'nordic') {
+        if (inputModeId === 'zh-pinyin') {
+          chinesePinyin.reset();
+        }
+
+        setInputModeId('nordic-direct');
+        editor?.focus();
+        return;
+      }
+
+      if (inputModeId === 'nordic-direct') {
+        setInputModeId('en-direct');
+      }
+
+      editor?.focus();
+    },
+    [
+      chinesePinyin,
+      editor,
+      inputModeId,
+      setInputModeId,
+      setKeyboardLayoutSetting,
+    ],
   );
 
   const handleMouseDown = useCallback(
@@ -354,9 +437,15 @@ export function App() {
         inputModeId={inputModeId}
         onInputModeChange={handleInputModeChange}
         keyboardVisible={keyboardVisible}
+        keyboardLayoutId={keyboardLayoutId}
         mouseVisible={mouseVisible}
+        panelAppearance={panelAppearance}
+        panelSkin={panelSkin}
         onKeyboardVisibleChange={setKeyboardVisible}
+        onKeyboardLayoutChange={handleKeyboardLayoutChange}
         onMouseVisibleChange={setMouseVisible}
+        onPanelAppearanceChange={setPanelAppearanceSetting}
+        onPanelSkinChange={setPanelSkinSetting}
         onClearText={handleClearText}
         onCopyText={handleCopyText}
         onExportText={handleExportText}
@@ -428,9 +517,12 @@ export function App() {
           <VirtualInputPanel
             activeKeys={activeKeys}
             activeMouseButtons={activeMouseButtons}
+            appearance={panelAppearance}
             editor={editor}
+            keyboardLayout={keyboardLayout}
             keyboardVisible={keyboardVisible}
             mouseVisible={mouseVisible}
+            skin={panelSkin}
           />
         </section>
       ) : null}

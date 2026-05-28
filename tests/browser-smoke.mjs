@@ -199,7 +199,9 @@ try {
 
         const inputSummary = document.querySelector('summary[aria-label="Choose input mode"]');
         inputSummary.click();
-        inputSummary.parentElement.querySelectorAll('.menu-control__item')[2].click();
+        Array.from(inputSummary.parentElement.querySelectorAll('.menu-control__item')).find(
+          (item) => item.textContent?.trim() === 'Chinese Pinyin',
+        )?.click();
         await sleep(50);
         const pageCountCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Show Pinyin page count"]');
         const fuzzyCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Use fuzzy Pinyin matching"]');
@@ -301,6 +303,141 @@ try {
 
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
+        const panelSummary = document.querySelector('summary[aria-label="Choose visible input panels"]');
+        panelSummary.click();
+        const panelMenu = panelSummary.parentElement;
+        const getPanelItem = (label) =>
+          Array.from(panelMenu.querySelectorAll('.menu-control__item')).find(
+            (item) => item.textContent?.trim() === label,
+          );
+        getPanelItem('Realistic')?.click();
+        await sleep(100);
+        const realisticApplied =
+          document.querySelector('.virtual-input-panel')?.dataset.appearance === 'realistic';
+        const skinVisible = Boolean(getPanelItem('Dark mechanical'));
+        const naturalWoodVisible = Boolean(getPanelItem('Natural wood'));
+        getPanelItem('Dark mechanical')?.click();
+        await sleep(100);
+        const darkSkinApplied =
+          document.querySelector('.virtual-input-panel')?.dataset.skin === 'dark-mechanical';
+        getPanelItem('Natural wood')?.click();
+        await sleep(100);
+        const naturalWoodApplied =
+          document.querySelector('.virtual-input-panel')?.dataset.skin === 'natural-wood';
+        const naturalWoodKeyColorBeforeTheme =
+          window.getComputedStyle(document.querySelector('.virtual-key')).color;
+        const themeSummary = document.querySelector('summary[aria-label="Choose theme"]');
+        themeSummary.click();
+        Array.from(themeSummary.parentElement.querySelectorAll('.menu-control__item')).find(
+          (item) => item.textContent?.trim() === 'High contrast',
+        )?.click();
+        await sleep(100);
+        const naturalWoodUnaffectedByTheme =
+          window.getComputedStyle(document.querySelector('.virtual-key')).color ===
+          naturalWoodKeyColorBeforeTheme;
+        const naturalWoodKeyBackgrounds = Array.from(
+          document.querySelectorAll('.virtual-key'),
+        )
+          .slice(0, 4)
+          .map((key) => window.getComputedStyle(key).backgroundImage);
+        const naturalWoodMixedKeyColors = new Set(naturalWoodKeyBackgrounds).size > 1;
+        Array.from(themeSummary.parentElement.querySelectorAll('.menu-control__item')).find(
+          (item) => item.textContent?.trim() === 'Light',
+        )?.click();
+        await sleep(100);
+        getPanelItem('Simple')?.click();
+        await sleep(100);
+        const simpleApplied =
+          document.querySelector('.virtual-input-panel')?.dataset.appearance === 'simple';
+        const skinHiddenInSimple = !getPanelItem('Dark mechanical');
+        getPanelItem('Realistic')?.click();
+        await sleep(100);
+        const persistedAppearance =
+          localStorage.getItem('freetyping:panelAppearance') === '"realistic"';
+        const persistedSkin =
+          localStorage.getItem('freetyping:panelSkin') === '"natural-wood"';
+        getPanelItem('Simple')?.click();
+        await sleep(100);
+        getPanelItem('Combined Nordic')?.click();
+        await sleep(100);
+        const nordicLayoutApplied =
+          localStorage.getItem('freetyping:keyboardLayoutId') === '"nordic"';
+        const nordicInputSelected =
+          document.querySelector('.editor-status')?.textContent?.includes('Nordic Direct') ??
+          false;
+        const nordicKeysVisible =
+          Boolean(document.querySelector('button[aria-label="Å key"]')) &&
+          Boolean(document.querySelector('button[aria-label="Ä key"]')) &&
+          Boolean(document.querySelector('button[aria-label="Ö key"]')) &&
+          Boolean(document.querySelector('button[aria-label="Æ key"]')) &&
+          Boolean(document.querySelector('button[aria-label="Ø key"]'));
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        document.querySelector('button[aria-label="Å key"]')?.click();
+        document.querySelector('button[aria-label="Ä key"]')?.click();
+        document.querySelector('button[aria-label="Ö key"]')?.click();
+        document.querySelector('button[aria-label="Æ key"]')?.click();
+        document.querySelector('button[aria-label="Ø key"]')?.click();
+        await sleep(50);
+        const nordicVirtualText = textarea.value;
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: '[',
+            code: 'BracketLeft',
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        textarea.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: '{',
+            code: 'BracketRight',
+            shiftKey: true,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await sleep(50);
+        const nordicPhysicalText = textarea.value;
+        panelSummary.click();
+        await sleep(50);
+
+        inputSummary.click();
+        await sleep(50);
+        const englishDirectButton = Array.from(
+          inputSummary.parentElement.querySelectorAll('.menu-control__item'),
+        ).find((item) => item.textContent?.trim() === 'English Direct');
+        const chinesePinyinButton = Array.from(
+          inputSummary.parentElement.querySelectorAll('.menu-control__item'),
+        ).find((item) => item.textContent?.trim() === 'Chinese Pinyin');
+        const englishDisabledOnNordic = englishDirectButton?.disabled === true;
+        const pinyinDisabledOnNordic = chinesePinyinButton?.disabled === true;
+        inputSummary.click();
+        await sleep(50);
+
+        panelSummary.click();
+        getPanelItem('QWERTY')?.click();
+        await sleep(100);
+        const qwertyLayoutApplied =
+          localStorage.getItem('freetyping:keyboardLayoutId') === '"qwerty"';
+        const qwertySwitchSelectedEnglish =
+          document.querySelector('.editor-status')?.textContent?.includes('English Direct') ??
+          false;
+        panelSummary.click();
+        await sleep(50);
+
+        inputSummary.click();
+        Array.from(inputSummary.parentElement.querySelectorAll('.menu-control__item')).find(
+          (item) => item.textContent?.trim() === 'Chinese Pinyin',
+        )?.click();
+        await sleep(100);
+        const pinyinSwitchKeepsQwerty =
+          localStorage.getItem('freetyping:keyboardLayoutId') === '"qwerty"';
+        inputSummary.click();
+        await sleep(50);
+
         return {
           coreEditing,
           initialStatsText,
@@ -333,6 +470,27 @@ try {
           englishFoldLeft,
           englishTitleEnd,
           stats,
+          realisticApplied,
+          skinVisible,
+          naturalWoodVisible,
+          darkSkinApplied,
+          naturalWoodApplied,
+          naturalWoodUnaffectedByTheme,
+          naturalWoodMixedKeyColors,
+          simpleApplied,
+          skinHiddenInSimple,
+          persistedAppearance,
+          persistedSkin,
+          nordicLayoutApplied,
+          nordicInputSelected,
+          nordicKeysVisible,
+          nordicVirtualText,
+          nordicPhysicalText,
+          englishDisabledOnNordic,
+          pinyinDisabledOnNordic,
+          qwertyLayoutApplied,
+          qwertySwitchSelectedEnglish,
+          pinyinSwitchKeepsQwerty,
         };
       })()
     `,
@@ -384,10 +542,70 @@ try {
     'English fold control is too close to the title.',
   );
   assert(result.stats.includes('Chars'), 'Stats did not render.');
+  assert(result.realisticApplied, 'Realistic panel appearance was not applied.');
+  assert(result.skinVisible, 'Panel skin controls did not appear for realistic appearance.');
+  assert(result.naturalWoodVisible, 'Natural wood skin control did not appear.');
+  assert(result.darkSkinApplied, 'Dark mechanical skin was not applied.');
+  assert(result.naturalWoodApplied, 'Natural wood skin was not applied.');
+  assert(
+    result.naturalWoodUnaffectedByTheme,
+    'Realistic panel skin should not be overridden by the app theme.',
+  );
+  assert(result.naturalWoodMixedKeyColors, 'Natural wood skin should use mixed key colors.');
+  assert(result.simpleApplied, 'Simple panel appearance was not restored.');
+  assert(result.skinHiddenInSimple, 'Skin controls should be hidden for simple appearance.');
+  assert(result.persistedAppearance, 'Panel appearance was not persisted.');
+  assert(result.persistedSkin, 'Panel skin was not persisted.');
+  assert(result.nordicLayoutApplied, 'Nordic layout was not persisted.');
+  assert(result.nordicInputSelected, 'Nordic layout did not switch to Nordic Direct.');
+  assert(result.nordicKeysVisible, 'Nordic character keys did not render.');
+  assert(
+    result.nordicVirtualText === 'åäöæø',
+    'Nordic virtual keys did not insert their displayed characters.',
+  );
+  assert(
+    result.nordicPhysicalText === 'åÄ',
+    'Nordic Direct did not map physical key codes to Nordic characters.',
+  );
+  assert(result.englishDisabledOnNordic, 'English Direct should be disabled on Nordic layout.');
+  assert(result.pinyinDisabledOnNordic, 'Chinese Pinyin should be disabled on Nordic layout.');
+  assert(result.qwertyLayoutApplied, 'QWERTY layout was not restored.');
+  assert(
+    result.qwertySwitchSelectedEnglish,
+    'Switching from Nordic layout to QWERTY should select English Direct.',
+  );
+  assert(
+    result.pinyinSwitchKeepsQwerty,
+    'Selecting Chinese Pinyin should keep the keyboard on QWERTY.',
+  );
 
   await captureViewport(send, 'desktop', 1280, 900);
   await captureViewport(send, 'tablet', 820, 900);
   await captureViewport(send, 'mobile', 390, 844);
+
+  await evaluate(
+    send,
+    String.raw`
+      (async () => {
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        const panelSummary = document.querySelector('summary[aria-label="Choose visible input panels"]');
+        panelSummary.click();
+        const panelMenu = panelSummary.parentElement;
+        const getPanelItem = (label) =>
+          Array.from(panelMenu.querySelectorAll('.menu-control__item')).find(
+            (item) => item.textContent?.trim() === label,
+          );
+        getPanelItem('Realistic')?.click();
+        await sleep(50);
+        getPanelItem('Natural wood')?.click();
+        await sleep(50);
+        getPanelItem('Combined Nordic')?.click();
+        await sleep(50);
+        panelSummary.click();
+      })()
+    `,
+  );
+  await captureViewport(send, 'desktop-realistic-panel', 1280, 900);
 
   socket.close();
   console.log(`Browser smoke checks passed. Screenshots written to ${artifactDir}/`);

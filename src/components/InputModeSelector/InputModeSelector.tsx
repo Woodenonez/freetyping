@@ -1,8 +1,10 @@
 import { inputModes } from '../../input/inputManager';
+import type { KeyboardLayoutId } from '../../keyboard/layouts';
 
 type InputModeSelectorProps = {
   pinyinShowPageCount: boolean;
   pinyinFuzzyMatching: boolean;
+  keyboardLayoutId: KeyboardLayoutId;
   value: string;
   onChange: (inputModeId: string) => void;
   onPinyinShowPageCountChange: (showPageCount: boolean) => void;
@@ -12,6 +14,7 @@ type InputModeSelectorProps = {
 export function InputModeSelector({
   pinyinShowPageCount,
   pinyinFuzzyMatching,
+  keyboardLayoutId,
   value,
   onChange,
   onPinyinShowPageCountChange,
@@ -19,6 +22,10 @@ export function InputModeSelector({
 }: InputModeSelectorProps) {
   const [systemMode, ...webModes] = inputModes;
   const currentMode = inputModes.find((mode) => mode.id === value) ?? systemMode;
+  const isInputModeDisabled = (inputModeId: string) =>
+    keyboardLayoutId === 'nordic' &&
+    inputModeId !== 'system' &&
+    inputModeId !== 'nordic-direct';
 
   return (
     <details className="menu-control">
@@ -41,6 +48,7 @@ export function InputModeSelector({
           <button
             className="menu-control__item"
             data-selected={currentMode.id === mode.id ? 'true' : 'false'}
+            disabled={isInputModeDisabled(mode.id)}
             key={mode.id}
             type="button"
             role="menuitemradio"

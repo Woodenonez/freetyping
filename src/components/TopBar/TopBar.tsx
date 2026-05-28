@@ -3,15 +3,22 @@ import { FileMenu } from '../FileMenu/FileMenu';
 import { InputModeSelector } from '../InputModeSelector/InputModeSelector';
 import { PanelMenu } from '../PanelMenu/PanelMenu';
 import { ThemeMenu } from '../ThemeMenu/ThemeMenu';
-import type { Theme } from '../../app/appState';
+import type { PanelAppearance, PanelSkin, Theme } from '../../app/appState';
+import type { KeyboardLayoutId } from '../../keyboard/layouts';
 
 type TopBarProps = {
   inputModeId: string;
   onInputModeChange: (inputModeId: string) => void;
   keyboardVisible: boolean;
+  keyboardLayoutId: KeyboardLayoutId;
   mouseVisible: boolean;
+  panelAppearance: PanelAppearance;
+  panelSkin: PanelSkin;
   onKeyboardVisibleChange: (visible: boolean) => void;
+  onKeyboardLayoutChange: (layoutId: KeyboardLayoutId) => void;
   onMouseVisibleChange: (visible: boolean) => void;
+  onPanelAppearanceChange: (appearance: PanelAppearance) => void;
+  onPanelSkinChange: (skin: PanelSkin) => void;
   onClearText: () => void;
   onCopyText: () => void;
   onExportText: () => void;
@@ -32,9 +39,15 @@ export function TopBar({
   inputModeId,
   onInputModeChange,
   keyboardVisible,
+  keyboardLayoutId,
   mouseVisible,
+  panelAppearance,
+  panelSkin,
   onKeyboardVisibleChange,
+  onKeyboardLayoutChange,
   onMouseVisibleChange,
+  onPanelAppearanceChange,
+  onPanelSkinChange,
   onClearText,
   onCopyText,
   onExportText,
@@ -79,6 +92,7 @@ export function TopBar({
         <InputModeSelector
           pinyinShowPageCount={pinyinShowPageCount}
           pinyinFuzzyMatching={pinyinFuzzyMatching}
+          keyboardLayoutId={keyboardLayoutId}
           value={inputModeId}
           onChange={onInputModeChange}
           onPinyinShowPageCountChange={onPinyinShowPageCountChange}
@@ -86,9 +100,15 @@ export function TopBar({
         />
         <PanelMenu
           keyboardVisible={keyboardVisible}
+          keyboardLayoutId={keyboardLayoutId}
           mouseVisible={mouseVisible}
+          panelAppearance={panelAppearance}
+          panelSkin={panelSkin}
           onKeyboardVisibleChange={onKeyboardVisibleChange}
+          onKeyboardLayoutChange={onKeyboardLayoutChange}
           onMouseVisibleChange={onMouseVisibleChange}
+          onPanelAppearanceChange={onPanelAppearanceChange}
+          onPanelSkinChange={onPanelSkinChange}
         />
         <span className="top-bar__divider" aria-hidden="true" />
         <ThemeMenu value={theme} onChange={onThemeChange} />

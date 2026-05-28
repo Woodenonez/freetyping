@@ -1,15 +1,20 @@
 import type { EditorAdapter } from '../../utils/editorAdapter';
-import { qwertyLayout } from '../../keyboard/layouts/qwerty';
+import type { KeyboardLayout } from '../../keyboard/types';
 
 type VirtualKeyboardProps = {
   activeKeys: Set<string>;
   editor: EditorAdapter | null;
+  layout: KeyboardLayout;
 };
 
-export function VirtualKeyboard({ activeKeys, editor }: VirtualKeyboardProps) {
+export function VirtualKeyboard({
+  activeKeys,
+  editor,
+  layout,
+}: VirtualKeyboardProps) {
   return (
     <div className="virtual-keyboard" aria-label="Virtual keyboard">
-      {qwertyLayout.rows.map((row, rowIndex) => (
+      {layout.rows.map((row, rowIndex) => (
         <div className="virtual-keyboard__row" key={rowIndex}>
           {row.map((key) => {
             const isActive = activeKeys.has(key.code);
