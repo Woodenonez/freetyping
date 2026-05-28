@@ -59,8 +59,8 @@ export function FileMenu({
           <div className="menu-control__help" role="note">
             <p>FreeTyping</p>
             <p>
-              A local-first typing workspace for plain text editing, input
-              practice, keyboard feedback, and browser-based Chinese Pinyin.
+              A typing workspace for pure text editing, keyboard
+              feedback, and browser-based input methods.
             </p>
           </div>
         </details>
@@ -69,14 +69,10 @@ export function FileMenu({
           <div className="menu-control__help" role="note">
             <p>Chinese Pinyin</p>
             <ul>
-              <li>Letters build the buffer.</li>
+              <li>Number / Arrow keys to select candidates.</li>
               <li>Space commits the selected candidate.</li>
-              <li>Number keys select candidates.</li>
-              <li>Arrow keys move candidate selection.</li>
               <li>Fuzzy matching is optional in Input Mode.</li>
               <li>Punctuation keys insert Chinese punctuation.</li>
-              <li>Backspace edits the buffer.</li>
-              <li>Escape cancels the buffer.</li>
             </ul>
           </div>
         </details>

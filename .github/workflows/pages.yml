@@ -1,9 +1,6 @@
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -37,7 +34,7 @@ jobs:
         env:
           GITHUB_PAGES_BASE: /freetyping/
 
-      - name: Publish gh-pages branch
+      - name: Publish deploy branch
         run: |
           rm -rf /tmp/freetyping-pages
           mkdir /tmp/freetyping-pages
@@ -46,11 +43,11 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch origin gh-pages || true
-          git switch --orphan gh-pages
+          git switch --orphan deploy
           git rm -rf . || true
+          git clean -fdx
           cp -a /tmp/freetyping-pages/. .
           git add -f .
           git diff --cached --quiet && exit 0
           git commit -m "Deploy GitHub Pages"
-          git push origin gh-pages --force
+          git push origin deploy --force

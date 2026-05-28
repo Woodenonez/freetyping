@@ -4,7 +4,7 @@ A lightweight static typing app built with Vite, React, and TypeScript.
 
 ## Current Version
 
-V4 real Pinyin dictionary slice.
+Official v0.1.0.
 
 Implemented:
 
@@ -121,7 +121,12 @@ test-artifacts/
 
 ## GitHub Pages Base Path
 
-The app deploys to GitHub Pages through `.github/workflows/pages.yml` on every push to `main`.
+The tested static build is published from the `deploy` branch. The `main`
+branch is used for current development and can contain newer untested work.
+
+After testing a version, run the GitHub Pages workflow or publish a built
+`dist/` folder to `deploy`.
+
 The workflow builds with the repository base path:
 
 ```bash
@@ -129,6 +134,14 @@ GITHUB_PAGES_BASE=/freetyping/ npm run build
 ```
 
 For local development and normal static hosting, no environment variable is needed.
+
+## License
+
+FreeTyping is released under the MIT License.
+
+The generated Pinyin dictionary is built from `rime/rime-pinyin-simp`, which is
+licensed under Apache License 2.0. Its attribution and license copy are kept in
+`third_party/rime-pinyin-simp/`.
 
 ## V4 Manual Check
 

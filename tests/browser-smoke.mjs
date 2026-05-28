@@ -344,7 +344,8 @@ try {
   assert(result.virtualKeyboard, 'Virtual keyboard insertion failed.');
   assert(result.saveTextUncheckedByDefault, 'Save text should be unchecked by default.');
   assert(result.aboutText.includes('FreeTyping'), 'About menu did not appear.');
-  assert(result.aboutText.includes('local-first typing workspace'), 'About menu text was missing.');
+  assert(result.aboutText.includes('pure text editing'), 'About menu text was missing.');
+  assert(result.aboutText.includes('browser-based input methods'), 'About menu text was missing.');
   assert(result.persisted, 'Persistence failed.');
   assert(result.savedTextRemovedWhenDisabled, 'Disabling local save did not remove saved text.');
   assert(result.saveWarning.includes('Text saving disabled'), 'Save warning did not appear in editor.');
