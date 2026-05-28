@@ -121,7 +121,7 @@ export const TextEditor = forwardRef<HTMLTextAreaElement, TextEditorProps>(
                   aria-label={`${foldControl.isFolded ? 'Unfold' : 'Fold'} ${foldControl.title}`}
                   style={{
                     top: `${foldControl.titleTop}px`,
-                    left: `calc(1rem + ${Math.min(foldControl.titleLength + 1, 56)}ch)`,
+                    left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 1, 56)}ch)`,
                   }}
                   onClick={foldControl.toggle}
                 >
@@ -133,7 +133,7 @@ export const TextEditor = forwardRef<HTMLTextAreaElement, TextEditorProps>(
                     aria-hidden="true"
                     style={{
                       top: `${foldControl.titleTop}px`,
-                      left: `calc(1rem + ${Math.min(foldControl.titleLength + 4, 60)}ch)`,
+                      left: `calc(1rem + ${Math.min(foldControl.titleDisplayWidth + 4, 60)}ch)`,
                     }}
                   >
                     {foldControl.badgeLabel}

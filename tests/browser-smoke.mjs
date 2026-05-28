@@ -259,6 +259,22 @@ try {
         await sleep(50);
         const unfoldedValue = textarea.value;
 
+        textarea.value = '# 标题\n一行\n\n';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        await sleep(50);
+        const chineseFoldButton = document.querySelector('button[aria-label="Fold 标题"]');
+        const chineseFoldLeft = chineseFoldButton
+          ? Number.parseFloat(window.getComputedStyle(chineseFoldButton).left)
+          : 0;
+
+        textarea.value = '# abc\none\n\n';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        await sleep(50);
+        const englishFoldButton = document.querySelector('button[aria-label="Fold abc"]');
+        const englishFoldLeft = englishFoldButton
+          ? Number.parseFloat(window.getComputedStyle(englishFoldButton).left)
+          : 0;
+
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
         return {
@@ -285,6 +301,8 @@ try {
           foldedValue,
           foldBadge,
           unfoldedValue,
+          chineseFoldLeft,
+          englishFoldLeft,
           stats,
         };
       })()
@@ -319,6 +337,10 @@ try {
   assert(
     result.unfoldedValue === '# Notes\nline one\nline two\n\nafter',
     'Unfold did not restore the folded body text.',
+  );
+  assert(
+    result.chineseFoldLeft > result.englishFoldLeft,
+    'Chinese fold title did not reserve double-width spacing.',
   );
   assert(result.stats.includes('Chars'), 'Stats did not render.');
 
