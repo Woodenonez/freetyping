@@ -9,7 +9,7 @@ export const chinesePinyinInputMode: InputMode = {
   id: 'zh-pinyin',
   label: 'Chinese Pinyin',
   language: 'zh-CN',
-  description: 'Minimal dictionary-backed web Pinyin input method.',
+  description: 'Dictionary-backed web Pinyin input method.',
 };
 
 export type ChinesePinyinViewState = {
@@ -32,8 +32,26 @@ const emptyViewState: ChinesePinyinViewState = {
   visibleCandidates: [],
 };
 
+export type ChinesePinyinOptions = {
+  fuzzyMatching: boolean;
+};
+
+const chinesePunctuationByKey: Record<string, string> = {
+  ',': '，',
+  '.': '。',
+  '?': '？',
+  '!': '！',
+  ';': '；',
+  ':': '：',
+};
+
 function isLetterKey(event: KeyboardEvent): boolean {
-  return /^[a-z]$/i.test(event.key) && !event.altKey && !event.ctrlKey && !event.metaKey;
+  return (
+    /^[a-z]$/i.test(event.key) &&
+    !event.altKey &&
+    !event.ctrlKey &&
+    !event.metaKey
+  );
 }
 
 function isNumberSelectionKey(event: KeyboardEvent): boolean {
@@ -49,7 +67,18 @@ function isCandidateNavigationKey(key: string): boolean {
   );
 }
 
-export function useChinesePinyinController(active: boolean): {
+function getChinesePunctuation(event: KeyboardEvent): string | null {
+  if (event.altKey || event.ctrlKey || event.metaKey) {
+    return null;
+  }
+
+  return chinesePunctuationByKey[event.key] ?? null;
+}
+
+export function useChinesePinyinController(
+  active: boolean,
+  options: ChinesePinyinOptions,
+): {
   inputMode: InputMode;
   viewState: ChinesePinyinViewState;
   reset: () => void;
@@ -62,7 +91,9 @@ export function useChinesePinyinController(active: boolean): {
   }, []);
 
   const updateBuffer = useCallback((buffer: string) => {
-    const candidates = getPinyinCandidates(buffer);
+    const candidates = getPinyinCandidates(buffer, {
+      fuzzyMatching: options.fuzzyMatching,
+    });
     const pageState = getCandidatePageState(candidates, 0);
     setViewState({
       buffer,
@@ -70,7 +101,7 @@ export function useChinesePinyinController(active: boolean): {
       ...pageState,
       selectedCandidateIndex: 0,
     });
-  }, []);
+  }, [options.fuzzyMatching]);
 
   const selectCandidate = useCallback((selectedCandidateIndex: number) => {
     setViewState((currentState) => {
@@ -112,8 +143,30 @@ export function useChinesePinyinController(active: boolean): {
           };
         }
 
+        const chinesePunctuation = getChinesePunctuation(event);
+
         if (viewState.buffer.length === 0) {
+          if (chinesePunctuation) {
+            return {
+              handled: true,
+              insertText: chinesePunctuation,
+              preventDefault: true,
+            };
+          }
+
           return null;
+        }
+
+        if (chinesePunctuation) {
+          const commitText =
+            viewState.candidates[viewState.selectedCandidateIndex] ??
+            viewState.buffer;
+          reset();
+          return {
+            handled: true,
+            insertText: `${commitText}${chinesePunctuation}`,
+            preventDefault: true,
+          };
         }
 
         if (event.key === 'Backspace') {

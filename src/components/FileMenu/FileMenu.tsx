@@ -63,6 +63,8 @@ export function FileMenu({
               <li>Space commits the selected candidate.</li>
               <li>Number keys select candidates.</li>
               <li>Arrow keys move candidate selection.</li>
+              <li>Fuzzy matching is optional in Input Mode.</li>
+              <li>Punctuation keys insert Chinese punctuation.</li>
               <li>Backspace edits the buffer.</li>
               <li>Escape cancels the buffer.</li>
             </ul>

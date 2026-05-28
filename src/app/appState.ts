@@ -10,6 +10,7 @@ export type AppState = {
   fontSize: number;
   saveTextLocally: boolean;
   pinyinShowPageCount: boolean;
+  pinyinFuzzyMatching: boolean;
 };
 
 export const STORAGE_KEYS = {
@@ -21,4 +22,5 @@ export const STORAGE_KEYS = {
   fontSize: 'freetyping:fontSize',
   saveTextLocally: 'freetyping:saveTextLocally',
   pinyinShowPageCount: 'freetyping:pinyinShowPageCount',
+  pinyinFuzzyMatching: 'freetyping:pinyinFuzzyMatching',
 } as const;

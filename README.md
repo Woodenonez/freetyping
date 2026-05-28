@@ -4,7 +4,7 @@ A lightweight static typing app built with Vite, React, and TypeScript.
 
 ## Current Version
 
-V2 product hardening slice.
+V3 Chinese Pinyin module slice.
 
 Implemented:
 
@@ -16,9 +16,13 @@ Implemented:
 - Opt-in local text saving
 - Persistent input mode, keyboard panel visibility, mouse panel visibility, save-text setting, and theme
 - System and English Direct input modes
-- Minimal Chinese Pinyin input mode
+- Structured Chinese Pinyin input mode
 - Pinyin composition buffer and candidate row
 - Space commit, number selection, arrow navigation, Backspace edit, and Escape cancel
+- Frequency-ranked candidates
+- Multi-syllable phrase lookup and segmented continuous Pinyin input
+- Optional fuzzy Pinyin matching for `z/zh`, `c/ch`, `s/sh`, and `n/l`
+- Chinese punctuation insertion in Pinyin mode
 - Font size setting
 - Import and export `.txt`
 - Keyboard help menu
@@ -38,7 +42,7 @@ Implemented:
 
 Not implemented yet:
 
-- Larger Chinese Pinyin dictionary
+- Licensed large-corpus Chinese Pinyin dictionary import
 - Full mobile optimization
 - Full automated browser test coverage
 
@@ -112,7 +116,7 @@ GITHUB_PAGES_BASE=/freetyping/ npm run build
 
 For local development and normal static hosting, no environment variable is needed.
 
-## V2 Manual Check
+## V3 Manual Check
 
 1. Run `npm install`.
 2. Run `npm run dev`.
@@ -131,7 +135,7 @@ For local development and normal static hosting, no environment variable is need
 6. Select and replace text in the editor.
 7. Use browser undo and redo.
 8. Open the `Input Mode` menu and confirm `System Input` is first, followed by a divider.
-9. Open the `File` menu and confirm it contains `Import`, `Export`, `Save text`, and `Clear Saved`.
+9. Open the `File` menu and confirm it contains `Import`, `Export`, `Save text`, and `Help`.
 10. Open the Panel dropdown and separately toggle Keyboard and Mouse.
 11. Press physical keys and confirm matching virtual keys highlight when Keyboard is enabled.
 12. Click virtual character keys and confirm text inserts into the editor.
@@ -140,7 +144,7 @@ For local development and normal static hosting, no environment variable is need
 15. Open the `Theme` menu, select `High contrast`, refresh, and confirm the theme persists.
 16. Enable `Save text` from the `File` menu, type text, refresh, and confirm text restores.
 17. Disable `Save text`, refresh, and confirm saved text is not restored.
-18. Use `Clear Saved` from the `File` menu to remove persisted editor text.
+18. Disable `Save text` and confirm persisted editor text is removed.
 19. Select `Chinese Pinyin`.
 20. Type `nihao`, then press `Space`; confirm `你好` is inserted.
 21. Type `ni`, then press `2`; confirm `尼` is inserted.
@@ -151,17 +155,27 @@ For local development and normal static hosting, no environment variable is need
 26. Type `ni`, then press `Backspace`; confirm the buffer changes to `n`.
 27. Type `ni`, then press `Escape`; confirm the buffer disappears and editor text is unchanged.
 28. Start a Pinyin buffer, switch to `System Input`, and confirm the buffer disappears.
-29. Change the `Font` value and confirm the editor text size changes.
-30. Use `Import` with a `.txt` file and confirm the editor text is replaced.
-31. Use `Export` and confirm a `.txt` file downloads.
-32. Open `Help` and confirm the Pinyin key behavior is listed.
-33. Confirm the stats bar updates character count, word count, WPM, and session time.
-34. Click `Clear`, then click `Restore`; confirm the previous text returns.
-35. Import a `.txt`, then click `Restore`; confirm the previous text returns.
-36. Stop the dev server.
-37. Run `npm run test`.
-38. Run `npm run test:browser`.
-39. Run `npm run build`.
-40. Run `GITHUB_PAGES_BASE=/freetyping/ npm run build`.
-41. Run `npm run preview`.
-42. Open the preview URL and confirm the same V2 UI appears.
+29. Type `xianshi`, then press `Space`; confirm `显示` is inserted.
+30. Type `womende`, then press `Space`; confirm `我们的` is inserted through segmentation.
+31. Open `Input Mode`, enable `Fuzzy matching`, type `si`, then press `Space`; confirm `是` is inserted.
+32. With `Chinese Pinyin` active and no buffer, press `.`; confirm `。` is inserted.
+33. Change the `Font` value and confirm the editor text size changes.
+34. Use `Import` with a `.txt` file and confirm the editor text is replaced.
+35. Use `Export` and confirm a `.txt` file downloads.
+36. Open `Help` and confirm the Pinyin key behavior is listed.
+37. Confirm the stats bar updates character count, word count, WPM, and session time.
+38. Click `Clear`, then click `Restore`; confirm the previous text returns.
+39. Import a `.txt`, then click `Restore`; confirm the previous text returns.
+40. Stop the dev server.
+41. Run `npm run test`.
+42. Run `npm run test:browser`.
+43. Run `npm run build`.
+44. Run `GITHUB_PAGES_BASE=/freetyping/ npm run build`.
+45. Run `npm run preview`.
+46. Open the preview URL and confirm the same V3 UI appears.
+
+## Pinyin Data And Privacy
+
+The current V3 Pinyin data is a small built-in sample dictionary maintained in source code. It is structured for a future licensed corpus import, but it is not yet a complete production Chinese IME dictionary.
+
+Pinyin preferences are stored in local browser storage. Candidate lookup runs in the browser and does not send typed text to a server.

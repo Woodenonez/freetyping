@@ -9,6 +9,30 @@ describe('getPinyinCandidates', () => {
   it('looks up normalized dictionary entries', () => {
     expect(getPinyinCandidates(' SHI ').at(0)).toBe('是');
   });
+
+  it('ranks exact multi-syllable phrases before segmented candidates', () => {
+    expect(getPinyinCandidates('xianshi').slice(0, 3)).toEqual([
+      '显示',
+      '现实',
+      '限时',
+    ]);
+  });
+
+  it('segments continuous Pinyin when no exact phrase exists', () => {
+    expect(getPinyinCandidates('womende').at(0)).toBe('我们的');
+  });
+
+  it('can use zh/ch/sh fuzzy matching', () => {
+    expect(getPinyinCandidates('si', { fuzzyMatching: true })).toContain('是');
+  });
+
+  it('can use n/l fuzzy matching', () => {
+    expect(getPinyinCandidates('li', { fuzzyMatching: true })).toContain('你');
+  });
+
+  it('does not use fuzzy matching unless enabled', () => {
+    expect(getPinyinCandidates('si')).not.toContain('是');
+  });
 });
 
 describe('getCandidatePageState', () => {

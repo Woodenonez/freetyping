@@ -19,7 +19,9 @@ type TopBarProps = {
   saveTextLocally: boolean;
   onSaveTextLocallyChange: (saveTextLocally: boolean) => void;
   pinyinShowPageCount: boolean;
+  pinyinFuzzyMatching: boolean;
   onPinyinShowPageCountChange: (showPageCount: boolean) => void;
+  onPinyinFuzzyMatchingChange: (fuzzyMatching: boolean) => void;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
   fontSize: number;
@@ -40,7 +42,9 @@ export function TopBar({
   saveTextLocally,
   onSaveTextLocallyChange,
   pinyinShowPageCount,
+  pinyinFuzzyMatching,
   onPinyinShowPageCountChange,
+  onPinyinFuzzyMatchingChange,
   theme,
   onThemeChange,
   fontSize,
@@ -74,9 +78,11 @@ export function TopBar({
         <span className="top-bar__divider" aria-hidden="true" />
         <InputModeSelector
           pinyinShowPageCount={pinyinShowPageCount}
+          pinyinFuzzyMatching={pinyinFuzzyMatching}
           value={inputModeId}
           onChange={onInputModeChange}
           onPinyinShowPageCountChange={onPinyinShowPageCountChange}
+          onPinyinFuzzyMatchingChange={onPinyinFuzzyMatchingChange}
         />
         <PanelMenu
           keyboardVisible={keyboardVisible}

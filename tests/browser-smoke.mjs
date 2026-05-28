@@ -197,8 +197,11 @@ try {
         inputSummary.parentElement.querySelectorAll('.menu-control__item')[2].click();
         await sleep(50);
         const pageCountCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Show Pinyin page count"]');
+        const fuzzyCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Use fuzzy Pinyin matching"]');
         const pinyinSettingsVisible = Boolean(pageCountCheckbox);
+        const pinyinFuzzyVisible = Boolean(fuzzyCheckbox);
         if (!pageCountCheckbox?.checked) pageCountCheckbox?.click();
+        if (!fuzzyCheckbox?.checked) fuzzyCheckbox?.click();
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         const press = async (key, code = '') => {
@@ -221,6 +224,17 @@ try {
         const lastCandidatePage = document.querySelector('.pinyin-bar__page')?.textContent ?? '';
         await press('1', 'Digit1');
         const pagedPinyin = textarea.value;
+
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        for (const char of 'si') await press(char, 'Key' + char.toUpperCase());
+        await press(' ', 'Space');
+        const fuzzyPinyin = textarea.value;
+
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        await press('.', 'Period');
+        const chinesePunctuation = textarea.value;
 
         const clearButton = document.querySelector('button[aria-label="Clear editor text"]');
         clearButton.click();
@@ -257,11 +271,14 @@ try {
           saveWarning,
           saveWarningDismissed,
           pinyinSettingsVisible,
+          pinyinFuzzyVisible,
           pinyin,
           visibleCandidateCount,
           firstCandidatePage,
           lastCandidatePage,
           pagedPinyin,
+          fuzzyPinyin,
+          chinesePunctuation,
           recoveryVisible,
           recovered,
           foldButtonVisible,
@@ -283,13 +300,16 @@ try {
   assert(result.saveWarning.includes('Text saving disabled'), 'Save warning did not appear in editor.');
   assert(result.saveWarningDismissed, 'Save warning could not be dismissed.');
   assert(result.pinyinSettingsVisible, 'Pinyin settings menu did not appear.');
+  assert(result.pinyinFuzzyVisible, 'Pinyin fuzzy setting did not appear.');
   assert(result.pinyin === '尼', 'Pinyin candidate selection failed.');
   assert(result.visibleCandidateCount === 9, 'Pinyin candidates were not paginated.');
   assert(result.firstCandidatePage === '1/2', 'First candidate page did not render.');
   assert(result.lastCandidatePage === '2/2', 'ArrowDown did not move to the final candidate page.');
   assert(result.pagedPinyin === '识', 'Number selection did not use the visible candidate page.');
+  assert(result.fuzzyPinyin === '是', 'Fuzzy Pinyin selection failed.');
+  assert(result.chinesePunctuation === '。', 'Chinese punctuation insertion failed.');
   assert(result.recoveryVisible, 'Recovery control did not appear.');
-  assert(result.recovered === '识', 'Recovery restore failed.');
+  assert(result.recovered === '。', 'Recovery restore failed.');
   assert(result.foldButtonVisible, 'Fold control did not appear for # title section.');
   assert(
     result.foldedValue === '# Notes\n\nafter',

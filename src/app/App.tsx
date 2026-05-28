@@ -80,9 +80,15 @@ export function App() {
     STORAGE_KEYS.pinyinShowPageCount,
     true,
   );
+  const [pinyinFuzzyMatching, setPinyinFuzzyMatching] = useLocalStorageState(
+    STORAGE_KEYS.pinyinFuzzyMatching,
+    false,
+  );
   const activeKeys = useKeyboardTracker();
   const { activeMouseButtons, markMouseButton } = useMouseTracker();
-  const chinesePinyin = useChinesePinyinController(inputModeId === 'zh-pinyin');
+  const chinesePinyin = useChinesePinyinController(inputModeId === 'zh-pinyin', {
+    fuzzyMatching: pinyinFuzzyMatching,
+  });
 
   const inputMode = useMemo(() => {
     if (inputModeId === 'zh-pinyin') {
@@ -358,7 +364,9 @@ export function App() {
         saveTextLocally={saveTextLocally}
         onSaveTextLocallyChange={handleSaveTextLocallyChange}
         pinyinShowPageCount={pinyinShowPageCount}
+        pinyinFuzzyMatching={pinyinFuzzyMatching}
         onPinyinShowPageCountChange={setPinyinShowPageCount}
+        onPinyinFuzzyMatchingChange={setPinyinFuzzyMatching}
         theme={theme}
         onThemeChange={setTheme}
         fontSize={clampFontSize(fontSize)}

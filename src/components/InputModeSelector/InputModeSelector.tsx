@@ -2,16 +2,20 @@ import { inputModes } from '../../input/inputManager';
 
 type InputModeSelectorProps = {
   pinyinShowPageCount: boolean;
+  pinyinFuzzyMatching: boolean;
   value: string;
   onChange: (inputModeId: string) => void;
   onPinyinShowPageCountChange: (showPageCount: boolean) => void;
+  onPinyinFuzzyMatchingChange: (fuzzyMatching: boolean) => void;
 };
 
 export function InputModeSelector({
   pinyinShowPageCount,
+  pinyinFuzzyMatching,
   value,
   onChange,
   onPinyinShowPageCountChange,
+  onPinyinFuzzyMatchingChange,
 }: InputModeSelectorProps) {
   const [systemMode, ...webModes] = inputModes;
   const currentMode = inputModes.find((mode) => mode.id === value) ?? systemMode;
@@ -59,6 +63,17 @@ export function InputModeSelector({
                 }
               />
               <span>Show page count</span>
+            </label>
+            <label className="menu-control__item menu-control__checkbox-item">
+              <input
+                aria-label="Use fuzzy Pinyin matching"
+                checked={pinyinFuzzyMatching}
+                type="checkbox"
+                onChange={(event) =>
+                  onPinyinFuzzyMatchingChange(event.currentTarget.checked)
+                }
+              />
+              <span>Fuzzy matching</span>
             </label>
           </>
         ) : null}
