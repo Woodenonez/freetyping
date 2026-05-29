@@ -1,12 +1,14 @@
 import type { PanelAppearance, PanelSkin } from './panelAppearance';
+import type { AppInputModeId } from './inputSettings';
 import type { KeyboardLayoutId } from '../keyboard/layouts';
 
 export type Theme = 'light' | 'dark' | 'high-contrast';
 export type { PanelAppearance, PanelSkin } from './panelAppearance';
+export type { AppInputModeId } from './inputSettings';
 export type { KeyboardLayoutId } from '../keyboard/layouts';
 
 export type AppState = {
-  inputModeId: string;
+  inputModeId: AppInputModeId;
   keyboardVisible: boolean;
   mouseVisible: boolean;
   keyboardLayoutId: KeyboardLayoutId;

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { getKeyboardLayout, keyboardLayouts, parseKeyboardLayoutId } from '.';
+import {
+  getKeyboardLayout,
+  isNordicLayout,
+  keyboardLayouts,
+  parseKeyboardLayoutId,
+} from '.';
 
 describe('keyboard layouts', () => {
   it('keeps QWERTY as the default layout', () => {
@@ -8,18 +13,38 @@ describe('keyboard layouts', () => {
   });
 
   it('parses known layout ids', () => {
-    expect(parseKeyboardLayoutId('nordic')).toBe('nordic');
+    expect(parseKeyboardLayoutId('nordic-se-fi')).toBe('nordic-se-fi');
   });
 
   it('falls back to QWERTY for unknown layout ids', () => {
     expect(parseKeyboardLayoutId('dvorak')).toBe('qwerty');
   });
 
-  it('includes combined Nordic characters directly on the layout', () => {
-    const nordicLabels = getKeyboardLayout('nordic').rows.flat().map((key) => key.label);
+  it('migrates the old combined Nordic layout to QWERTY', () => {
+    expect(parseKeyboardLayoutId('nordic')).toBe('qwerty');
+  });
 
-    expect(nordicLabels).toEqual(
-      expect.arrayContaining(['Å', 'Ä', 'Ö', 'Æ', 'Ø']),
-    );
+  it('includes merged Swedish and Finnish as one Nordic layout', () => {
+    const layout = getKeyboardLayout('nordic-se-fi');
+
+    expect(layout.label).toBe('Nordic (SE/FI)');
+    expect(layout.countryCodes).toEqual(['SE', 'FI']);
+  });
+
+  it('keeps Norwegian and Danish mappings separate', () => {
+    const noSemicolon = getKeyboardLayout('nordic-no')
+      .rows.flat()
+      .find((key) => key.code === 'Semicolon')?.insertText;
+    const dkSemicolon = getKeyboardLayout('nordic-dk')
+      .rows.flat()
+      .find((key) => key.code === 'Semicolon')?.insertText;
+
+    expect(noSemicolon).toBe('ø');
+    expect(dkSemicolon).toBe('æ');
+  });
+
+  it('detects Nordic layout ids', () => {
+    expect(isNordicLayout('nordic-se-fi')).toBe(true);
+    expect(isNordicLayout('qwerty')).toBe(false);
   });
 });

@@ -1,7 +1,6 @@
 import type { PanelAppearance, PanelSkin } from '../../app/appState';
-import type { KeyboardLayout } from '../../keyboard/types';
+import type { KeyboardLayout, VirtualKey } from '../../keyboard/types';
 import type { MouseButtonId } from '../../mouse/types';
-import type { EditorAdapter } from '../../utils/editorAdapter';
 import { VirtualKeyboard } from './VirtualKeyboard';
 import { VirtualMouse } from './VirtualMouse';
 
@@ -9,10 +8,10 @@ type VirtualInputPanelProps = {
   activeKeys: Set<string>;
   activeMouseButtons: Set<MouseButtonId>;
   appearance: PanelAppearance;
-  editor: EditorAdapter | null;
   keyboardLayout: KeyboardLayout;
   keyboardVisible: boolean;
   mouseVisible: boolean;
+  onVirtualKeyPress: (key: VirtualKey) => void;
   skin: PanelSkin;
 };
 
@@ -20,10 +19,10 @@ export function VirtualInputPanel({
   activeKeys,
   activeMouseButtons,
   appearance,
-  editor,
   keyboardLayout,
   keyboardVisible,
   mouseVisible,
+  onVirtualKeyPress,
   skin,
 }: VirtualInputPanelProps) {
   return (
@@ -35,8 +34,8 @@ export function VirtualInputPanel({
       {keyboardVisible ? (
         <VirtualKeyboard
           activeKeys={activeKeys}
-          editor={editor}
           layout={keyboardLayout}
+          onKeyPress={onVirtualKeyPress}
         />
       ) : null}
       {mouseVisible ? (

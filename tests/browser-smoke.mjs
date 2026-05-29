@@ -150,6 +150,69 @@ try {
   await waitForHttp(rootUrl);
   const { send, socket } = await connectToChrome();
 
+  await evaluate(
+    send,
+    String.raw`
+      (() => {
+        localStorage.clear();
+        localStorage.setItem('freetyping:inputModeId', '"zh-pinyin"');
+        localStorage.setItem('freetyping:keyboardLayoutId', '"qwerty"');
+      })()
+    `,
+  );
+  await send('Page.reload', { ignoreCache: true });
+  await wait(600);
+  const pinyinMigration = await evaluate(
+    send,
+    String.raw`
+      (() => ({
+        inputMode: localStorage.getItem('freetyping:inputModeId'),
+        layout: localStorage.getItem('freetyping:keyboardLayoutId'),
+        status: document.querySelector('.editor-status')?.textContent ?? '',
+      }))()
+    `,
+  );
+
+  await evaluate(
+    send,
+    String.raw`
+      (() => {
+        localStorage.clear();
+        localStorage.setItem('freetyping:inputModeId', '"nordic-direct"');
+        localStorage.setItem('freetyping:keyboardLayoutId', '"nordic"');
+      })()
+    `,
+  );
+  await send('Page.reload', { ignoreCache: true });
+  await wait(600);
+  const nordicMigration = await evaluate(
+    send,
+    String.raw`
+      (() => ({
+        inputMode: localStorage.getItem('freetyping:inputModeId'),
+        layout: localStorage.getItem('freetyping:keyboardLayoutId'),
+        status: document.querySelector('.editor-status')?.textContent ?? '',
+      }))()
+    `,
+  );
+
+  assert(
+    pinyinMigration.inputMode === '"overlay"' &&
+      pinyinMigration.layout === '"pinyin-cn"' &&
+      pinyinMigration.status.includes('Overlay Input · Pinyin (CN)'),
+    'Old Pinyin input settings did not migrate to Overlay + Pinyin (CN).',
+  );
+  assert(
+    nordicMigration.inputMode === '"overlay"' &&
+      nordicMigration.layout === '"qwerty"' &&
+      nordicMigration.status.includes('Overlay Input · QWERTY'),
+    'Old combined Nordic input settings did not migrate to Overlay + QWERTY.',
+  );
+
+  await evaluate(send, 'localStorage.clear()');
+  await send('Page.reload', { ignoreCache: true });
+  await wait(600);
+
   const result = await evaluate(
     send,
     String.raw`
@@ -197,10 +260,22 @@ try {
         await sleep(50);
         const saveWarningDismissed = !document.querySelector('.text-editor__warning');
 
+        const panelSummary = document.querySelector('summary[aria-label="Choose visible input panels"]');
+        panelSummary.click();
+        const panelMenu = panelSummary.parentElement;
+        const getPanelItem = (label) =>
+          Array.from(panelMenu.querySelectorAll('.menu-control__item')).find(
+            (item) => item.textContent?.trim() === label,
+          );
+        getPanelItem('Pinyin (CN)')?.click();
+        await sleep(100);
+        panelSummary.click();
+        await sleep(50);
+
         const inputSummary = document.querySelector('summary[aria-label="Choose input mode"]');
         inputSummary.click();
         Array.from(inputSummary.parentElement.querySelectorAll('.menu-control__item')).find(
-          (item) => item.textContent?.trim() === 'Chinese Pinyin',
+          (item) => item.textContent?.trim() === 'Overlay Input',
         )?.click();
         await sleep(50);
         const pageCountCheckbox = inputSummary.parentElement.querySelector('input[aria-label="Show Pinyin page count"]');
@@ -303,13 +378,7 @@ try {
 
         const stats = document.querySelector('dl[aria-label="Typing stats"]')?.textContent ?? '';
 
-        const panelSummary = document.querySelector('summary[aria-label="Choose visible input panels"]');
         panelSummary.click();
-        const panelMenu = panelSummary.parentElement;
-        const getPanelItem = (label) =>
-          Array.from(panelMenu.querySelectorAll('.menu-control__item')).find(
-            (item) => item.textContent?.trim() === label,
-          );
         getPanelItem('Realistic')?.click();
         await sleep(100);
         const realisticApplied =
@@ -358,42 +427,38 @@ try {
           localStorage.getItem('freetyping:panelSkin') === '"natural-wood"';
         getPanelItem('Simple')?.click();
         await sleep(100);
-        getPanelItem('Combined Nordic')?.click();
+        getPanelItem('Nordic (SE/FI)')?.click();
         await sleep(100);
         const nordicLayoutApplied =
-          localStorage.getItem('freetyping:keyboardLayoutId') === '"nordic"';
-        const nordicInputSelected =
-          document.querySelector('.editor-status')?.textContent?.includes('Nordic Direct') ??
+          localStorage.getItem('freetyping:keyboardLayoutId') === '"nordic-se-fi"';
+        const overlayInputSelected =
+          document.querySelector('.editor-status')?.textContent?.includes('Overlay Input') ??
           false;
         const nordicKeysVisible =
           Boolean(document.querySelector('button[aria-label="Å key"]')) &&
           Boolean(document.querySelector('button[aria-label="Ä key"]')) &&
-          Boolean(document.querySelector('button[aria-label="Ö key"]')) &&
-          Boolean(document.querySelector('button[aria-label="Æ key"]')) &&
-          Boolean(document.querySelector('button[aria-label="Ø key"]'));
+          Boolean(document.querySelector('button[aria-label="Ö key"]'));
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         document.querySelector('button[aria-label="Å key"]')?.click();
         document.querySelector('button[aria-label="Ä key"]')?.click();
         document.querySelector('button[aria-label="Ö key"]')?.click();
-        document.querySelector('button[aria-label="Æ key"]')?.click();
-        document.querySelector('button[aria-label="Ø key"]')?.click();
         await sleep(50);
         const nordicVirtualText = textarea.value;
         textarea.value = '';
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
         textarea.dispatchEvent(
           new KeyboardEvent('keydown', {
-            key: '[',
-            code: 'BracketLeft',
+            key: ';',
+            code: 'Semicolon',
             bubbles: true,
             cancelable: true,
           }),
         );
         textarea.dispatchEvent(
           new KeyboardEvent('keydown', {
-            key: '{',
-            code: 'BracketRight',
+            key: '"',
+            code: 'Quote',
             shiftKey: true,
             bubbles: true,
             cancelable: true,
@@ -401,19 +466,56 @@ try {
         );
         await sleep(50);
         const nordicPhysicalText = textarea.value;
+        getPanelItem('Nordic (NO)')?.click();
+        await sleep(100);
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new KeyboardEvent('keydown', {
+          key: ';',
+          code: 'Semicolon',
+          bubbles: true,
+          cancelable: true,
+        }));
+        textarea.dispatchEvent(new KeyboardEvent('keydown', {
+          key: "'",
+          code: 'Quote',
+          bubbles: true,
+          cancelable: true,
+        }));
+        await sleep(50);
+        const nordicNoPhysicalText = textarea.value;
+        getPanelItem('Nordic (DK)')?.click();
+        await sleep(100);
+        textarea.value = '';
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        textarea.dispatchEvent(new KeyboardEvent('keydown', {
+          key: ';',
+          code: 'Semicolon',
+          bubbles: true,
+          cancelable: true,
+        }));
+        textarea.dispatchEvent(new KeyboardEvent('keydown', {
+          key: "'",
+          code: 'Quote',
+          bubbles: true,
+          cancelable: true,
+        }));
+        await sleep(50);
+        const nordicDkPhysicalText = textarea.value;
         panelSummary.click();
         await sleep(50);
 
         inputSummary.click();
         await sleep(50);
-        const englishDirectButton = Array.from(
+        const inputModeLabels = Array.from(
           inputSummary.parentElement.querySelectorAll('.menu-control__item'),
-        ).find((item) => item.textContent?.trim() === 'English Direct');
-        const chinesePinyinButton = Array.from(
-          inputSummary.parentElement.querySelectorAll('.menu-control__item'),
-        ).find((item) => item.textContent?.trim() === 'Chinese Pinyin');
-        const englishDisabledOnNordic = englishDirectButton?.disabled === true;
-        const pinyinDisabledOnNordic = chinesePinyinButton?.disabled === true;
+        ).map((item) => item.textContent?.trim());
+        const inputModeOnlySystemOverlay =
+          inputModeLabels.includes('System Input') &&
+          inputModeLabels.includes('Overlay Input') &&
+          !inputModeLabels.includes('English Direct') &&
+          !inputModeLabels.includes('Chinese Pinyin') &&
+          !inputModeLabels.includes('Nordic Direct');
         inputSummary.click();
         await sleep(50);
 
@@ -422,21 +524,25 @@ try {
         await sleep(100);
         const qwertyLayoutApplied =
           localStorage.getItem('freetyping:keyboardLayoutId') === '"qwerty"';
-        const qwertySwitchSelectedEnglish =
-          document.querySelector('.editor-status')?.textContent?.includes('English Direct') ??
+        const qwertyKeepsOverlay =
+          document.querySelector('.editor-status')?.textContent?.includes('Overlay Input') ??
+          false;
+        getPanelItem('Pinyin (CN)')?.click();
+        await sleep(100);
+        const pinyinLayoutApplied =
+          localStorage.getItem('freetyping:keyboardLayoutId') === '"pinyin-cn"';
+        const pinyinLayoutKeepsOverlay =
+          document.querySelector('.editor-status')?.textContent?.includes('Overlay Input · Pinyin (CN)') ??
           false;
         panelSummary.click();
         await sleep(50);
 
-        inputSummary.click();
-        Array.from(inputSummary.parentElement.querySelectorAll('.menu-control__item')).find(
-          (item) => item.textContent?.trim() === 'Chinese Pinyin',
-        )?.click();
-        await sleep(100);
-        const pinyinSwitchKeepsQwerty =
-          localStorage.getItem('freetyping:keyboardLayoutId') === '"qwerty"';
-        inputSummary.click();
+        fileSummary.click();
+        const helpSummary = fileSummary.parentElement.querySelector('summary[aria-label="Help"]');
+        helpSummary?.click();
         await sleep(50);
+        const helpText = helpSummary?.parentElement?.textContent ?? '';
+        fileSummary.click();
 
         return {
           coreEditing,
@@ -482,15 +588,18 @@ try {
           persistedAppearance,
           persistedSkin,
           nordicLayoutApplied,
-          nordicInputSelected,
+          overlayInputSelected,
           nordicKeysVisible,
           nordicVirtualText,
           nordicPhysicalText,
-          englishDisabledOnNordic,
-          pinyinDisabledOnNordic,
+          nordicNoPhysicalText,
+          nordicDkPhysicalText,
+          inputModeOnlySystemOverlay,
           qwertyLayoutApplied,
-          qwertySwitchSelectedEnglish,
-          pinyinSwitchKeepsQwerty,
+          qwertyKeepsOverlay,
+          pinyinLayoutApplied,
+          pinyinLayoutKeepsOverlay,
+          helpText,
         };
       })()
     `,
@@ -557,27 +666,35 @@ try {
   assert(result.persistedAppearance, 'Panel appearance was not persisted.');
   assert(result.persistedSkin, 'Panel skin was not persisted.');
   assert(result.nordicLayoutApplied, 'Nordic layout was not persisted.');
-  assert(result.nordicInputSelected, 'Nordic layout did not switch to Nordic Direct.');
+  assert(result.overlayInputSelected, 'Nordic layout did not switch to Overlay Input.');
   assert(result.nordicKeysVisible, 'Nordic character keys did not render.');
   assert(
-    result.nordicVirtualText === 'åäöæø',
+    result.nordicVirtualText === 'åäö',
     'Nordic virtual keys did not insert their displayed characters.',
   );
   assert(
-    result.nordicPhysicalText === 'åÄ',
-    'Nordic Direct did not map physical key codes to Nordic characters.',
+    result.nordicPhysicalText === 'öÄ',
+    'Overlay Input did not map Swedish/Finnish physical key codes to Nordic characters.',
   );
-  assert(result.englishDisabledOnNordic, 'English Direct should be disabled on Nordic layout.');
-  assert(result.pinyinDisabledOnNordic, 'Chinese Pinyin should be disabled on Nordic layout.');
+  assert(result.nordicNoPhysicalText === 'øæ', 'Norwegian Nordic mapping was incorrect.');
+  assert(result.nordicDkPhysicalText === 'æø', 'Danish Nordic mapping was incorrect.');
+  assert(result.inputModeOnlySystemOverlay, 'Input Mode should only show System and Overlay.');
   assert(result.qwertyLayoutApplied, 'QWERTY layout was not restored.');
   assert(
-    result.qwertySwitchSelectedEnglish,
-    'Switching from Nordic layout to QWERTY should select English Direct.',
+    result.qwertyKeepsOverlay,
+    'Switching from Nordic layout to QWERTY should keep Overlay Input.',
   );
   assert(
-    result.pinyinSwitchKeepsQwerty,
-    'Selecting Chinese Pinyin should keep the keyboard on QWERTY.',
+    result.pinyinLayoutApplied,
+    'Selecting Pinyin layout should persist Pinyin (CN).',
   );
+  assert(
+    result.pinyinLayoutKeepsOverlay,
+    'Selecting Pinyin layout should use the Pinyin overlay handler.',
+  );
+  assert(result.helpText.includes('System Input'), 'Help should describe System Input.');
+  assert(result.helpText.includes('Overlay Input'), 'Help should describe Overlay Input.');
+  assert(!result.helpText.includes('Pinyin'), 'Help should use general input terms.');
 
   await captureViewport(send, 'desktop', 1280, 900);
   await captureViewport(send, 'tablet', 820, 900);
@@ -599,7 +716,7 @@ try {
         await sleep(50);
         getPanelItem('Natural wood')?.click();
         await sleep(50);
-        getPanelItem('Combined Nordic')?.click();
+        getPanelItem('Nordic (SE/FI)')?.click();
         await sleep(50);
         panelSummary.click();
       })()

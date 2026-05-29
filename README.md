@@ -4,7 +4,7 @@ A lightweight static typing app built with Vite, React, and TypeScript.
 
 ## Current Version
 
-Official v0.1.0.
+Official v0.2.0.
 
 Implemented:
 
@@ -15,8 +15,9 @@ Implemented:
 - Clear and copy actions
 - Opt-in local text saving
 - Persistent input mode, keyboard panel visibility, mouse panel visibility, save-text setting, and theme
-- System and English Direct input modes
-- Structured Chinese Pinyin input mode
+- System and Overlay input modes
+- Layout-driven Overlay input for QWERTY, Pinyin (CN), and Nordic layouts
+- Structured Chinese Pinyin overlay input
 - Lazy-loaded Apache-2.0 Pinyin dictionary generated from `rime-pinyin-simp`
 - Pinyin composition buffer and candidate row
 - Space commit, number selection, arrow navigation, Backspace edit, and Escape cancel
@@ -36,8 +37,7 @@ Implemented:
 - Browser smoke tests for editing, virtual keyboard, persistence, Pinyin, and layout screenshots
 - Composition-aware editor event routing
 - Virtual QWERTY keyboard with physical key highlighting
-- Combined Nordic virtual keyboard layout
-- Nordic Direct input mode
+- Nordic virtual keyboard variants for SE/FI, NO, and DK
 - Virtual key click insertion
 - Virtual mouse click feedback
 - Optional realistic virtual input panel appearance with shared skins
@@ -96,7 +96,7 @@ This downloads `pinyin_simp.dict.yaml` from `rime/rime-pinyin-simp`, parses it, 
 public/data/pinyin-dictionary.json
 ```
 
-The generated dictionary is loaded by the browser only when Chinese Pinyin mode is active.
+The generated dictionary is loaded by the browser only when Overlay Input is active with the Pinyin (CN) layout.
 
 ## Preview Production Build
 
@@ -146,7 +146,7 @@ The generated Pinyin dictionary is built from `rime/rime-pinyin-simp`, which is
 licensed under Apache License 2.0. Its attribution and license copy are kept in
 `third_party/rime-pinyin-simp/`.
 
-## V4 Manual Check
+## v0.2.0 Manual Check
 
 1. Run `npm install`.
 2. Run `npm run dev`.
@@ -169,49 +169,50 @@ licensed under Apache License 2.0. Its attribution and license copy are kept in
 10. Open the Panel dropdown and separately toggle Keyboard and Mouse.
 11. Select `Realistic`, try each skin including `Natural wood`, refresh, and confirm the appearance and skin persist.
 12. Switch back to `Simple` and confirm the skin choices are hidden.
-13. In the Panel dropdown, select `Combined Nordic` and confirm `Nordic Direct` becomes active.
-14. Confirm `Å`, `Ä`, `Ö`, `Æ`, and `Ø` appear on the virtual keyboard.
-15. Click those Nordic keys and confirm `åäöæø` is inserted.
-16. Open `Input Mode` while `Combined Nordic` is active and confirm `English Direct` and `Chinese Pinyin` are disabled.
-17. Switch the Panel layout back to `QWERTY` and confirm `English Direct` becomes active.
-18. Select `Chinese Pinyin` and confirm the layout remains `QWERTY`.
-19. Select `System Input`, switch between `QWERTY` and `Combined Nordic`, and confirm system input remains available.
-20. Press physical keys and confirm matching virtual keys highlight when Keyboard is enabled.
-21. Click virtual character keys and confirm text inserts into the editor.
-22. Click inside the app and confirm the virtual mouse highlights when Mouse is enabled.
-23. Switch input modes and refresh; confirm the selection persists.
-24. Open the `Theme` menu, select `High contrast`, refresh, and confirm the theme persists.
-25. Enable `Save text` from the `File` menu, type text, refresh, and confirm text restores.
-26. Disable `Save text`, refresh, and confirm saved text is not restored.
-27. Disable `Save text` and confirm persisted editor text is removed.
-28. Select `Chinese Pinyin`.
-29. Type `nihao`, then press `Space`; confirm `你好` is inserted.
-30. Type `ni`, then press `Space`; confirm `你` is inserted.
-31. Type `ni`, press `ArrowRight`, then press `Space`; confirm the second ranked candidate is inserted.
-32. Type `shi`, press `ArrowDown`, then press `Space`; confirm a candidate from the final page is inserted.
-33. Type `ni`, press `ArrowRight`, press `ArrowUp`, then press `Space`; confirm `你` is inserted.
-34. Type `zz`, then press `Space`; confirm `zz` is inserted as plain text.
-35. Type `ni`, then press `Backspace`; confirm the buffer changes to `n`.
-36. Type `ni`, then press `Escape`; confirm the buffer disappears and editor text is unchanged.
-37. Start a Pinyin buffer, switch to `System Input`, and confirm the buffer disappears.
-38. Type `xianshi`, then press `Space`; confirm `显示` is inserted.
-39. Type `womende`, then press `Space`; confirm `我们的` is inserted through segmentation.
-40. Open `Input Mode`, enable `Fuzzy matching`, type `si`, then press `Space`; confirm `是` is inserted.
-41. With `Chinese Pinyin` active and no buffer, press `.`; confirm `。` is inserted.
-42. Change the `Font` value and confirm the editor text size changes.
-43. Use `Import` with a `.txt` file and confirm the editor text is replaced.
-44. Use `Export` and confirm a `.txt` file downloads.
-45. Open `Help` and confirm the Pinyin key behavior is listed.
-46. Confirm the stats bar updates character count, word count, WPM, and session time.
-47. Click `Clear`, then click `Restore`; confirm the previous text returns.
-48. Import a `.txt`, then click `Restore`; confirm the previous text returns.
-49. Stop the dev server.
-50. Run `npm run test`.
-51. Run `npm run test:browser`.
-52. Run `npm run build`.
-53. Run `GITHUB_PAGES_BASE=/freetyping/ npm run build`.
-54. Run `npm run preview`.
-55. Open the preview URL and confirm the same V4 UI appears.
+13. Open `Input Mode` and confirm only `System Input` and `Overlay Input` are listed.
+14. In the Panel dropdown, select `Pinyin (CN)` and confirm `Overlay Input` is active.
+15. In the Panel dropdown, select `Nordic (SE/FI)` and confirm `Overlay Input` remains active.
+16. Confirm `Å`, `Ä`, and `Ö` appear on the SE/FI virtual keyboard.
+17. Click those Nordic keys and confirm `åäö` is inserted.
+18. Select `Nordic (NO)` and confirm `Ø` and `Æ` use Norwegian placement.
+19. Select `Nordic (DK)` and confirm `Æ` and `Ø` use Danish placement.
+20. Select `System Input`, switch between `QWERTY`, `Pinyin (CN)`, and Nordic layouts, and confirm system input remains available.
+21. Press physical keys and confirm matching virtual keys highlight when Keyboard is enabled.
+22. Click virtual character keys and confirm text inserts into the editor.
+23. Click inside the app and confirm the virtual mouse highlights when Mouse is enabled.
+24. Switch input modes and refresh; confirm the selection persists.
+25. Open the `Theme` menu, select `High contrast`, refresh, and confirm the theme persists.
+26. Enable `Save text` from the `File` menu, type text, refresh, and confirm text restores.
+27. Disable `Save text`, refresh, and confirm saved text is not restored.
+28. Disable `Save text` and confirm persisted editor text is removed.
+29. Select `Overlay Input` and `Pinyin (CN)`.
+30. Type `nihao`, then press `Space`; confirm `你好` is inserted.
+31. Type `ni`, then press `Space`; confirm `你` is inserted.
+32. Type `ni`, press `ArrowRight`, then press `Space`; confirm the second ranked candidate is inserted.
+33. Type `shi`, press `ArrowDown`, then press `Space`; confirm a candidate from the final page is inserted.
+34. Type `ni`, press `ArrowRight`, press `ArrowUp`, then press `Space`; confirm `你` is inserted.
+35. Type `zz`, then press `Space`; confirm `zz` is inserted as plain text.
+36. Type `ni`, then press `Backspace`; confirm the buffer changes to `n`.
+37. Type `ni`, then press `Escape`; confirm the buffer disappears and editor text is unchanged.
+38. Start a Pinyin buffer, switch to `System Input`, and confirm the buffer disappears.
+39. Type `xianshi`, then press `Space`; confirm `显示` is inserted.
+40. Type `womende`, then press `Space`; confirm `我们的` is inserted through segmentation.
+41. Open `Input Mode`, enable `Fuzzy matching`, type `si`, then press `Space`; confirm `是` is inserted.
+42. With Pinyin (CN) overlay active and no buffer, press `.`; confirm `。` is inserted.
+43. Change the `Font` value and confirm the editor text size changes.
+44. Use `Import` with a `.txt` file and confirm the editor text is replaced.
+45. Use `Export` and confirm a `.txt` file downloads.
+46. Open `Help` and confirm the Pinyin key behavior is listed.
+47. Confirm the stats bar updates character count, word count, WPM, and session time.
+48. Click `Clear`, then click `Restore`; confirm the previous text returns.
+49. Import a `.txt`, then click `Restore`; confirm the previous text returns.
+50. Stop the dev server.
+51. Run `npm run test`.
+52. Run `npm run test:browser`.
+53. Run `npm run build`.
+54. Run `GITHUB_PAGES_BASE=/freetyping/ npm run build`.
+55. Run `npm run preview`.
+56. Open the preview URL and confirm the same V4 UI appears.
 
 ## Pinyin Data And Privacy
 

@@ -1,16 +1,16 @@
-import type { EditorAdapter } from '../../utils/editorAdapter';
 import type { KeyboardLayout } from '../../keyboard/types';
+import type { VirtualKey } from '../../keyboard/types';
 
 type VirtualKeyboardProps = {
   activeKeys: Set<string>;
-  editor: EditorAdapter | null;
   layout: KeyboardLayout;
+  onKeyPress: (key: VirtualKey) => void;
 };
 
 export function VirtualKeyboard({
   activeKeys,
-  editor,
   layout,
+  onKeyPress,
 }: VirtualKeyboardProps) {
   return (
     <div className="virtual-keyboard" aria-label="Virtual keyboard">
@@ -34,7 +34,7 @@ export function VirtualKeyboard({
                     return;
                   }
 
-                  editor?.insertText(key.insertText ?? '');
+                  onKeyPress(key);
                 }}
                 style={{ flexGrow: key.width ?? 1 }}
                 type="button"

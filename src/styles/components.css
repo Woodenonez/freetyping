@@ -168,6 +168,13 @@
   text-transform: uppercase;
 }
 
+.panel-menu__subgroup-label {
+  padding: 0.3rem 0.45rem 0.05rem;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .menu-control__item {
   min-height: 2rem;
   display: flex;

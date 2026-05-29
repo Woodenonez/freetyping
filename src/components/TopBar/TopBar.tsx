@@ -3,12 +3,18 @@ import { FileMenu } from '../FileMenu/FileMenu';
 import { InputModeSelector } from '../InputModeSelector/InputModeSelector';
 import { PanelMenu } from '../PanelMenu/PanelMenu';
 import { ThemeMenu } from '../ThemeMenu/ThemeMenu';
-import type { PanelAppearance, PanelSkin, Theme } from '../../app/appState';
+import type {
+  AppInputModeId,
+  PanelAppearance,
+  PanelSkin,
+  Theme,
+} from '../../app/appState';
 import type { KeyboardLayoutId } from '../../keyboard/layouts';
 
 type TopBarProps = {
-  inputModeId: string;
-  onInputModeChange: (inputModeId: string) => void;
+  inputModeId: AppInputModeId;
+  isPinyinLayoutActive: boolean;
+  onInputModeChange: (inputModeId: AppInputModeId) => void;
   keyboardVisible: boolean;
   keyboardLayoutId: KeyboardLayoutId;
   mouseVisible: boolean;
@@ -37,6 +43,7 @@ type TopBarProps = {
 
 export function TopBar({
   inputModeId,
+  isPinyinLayoutActive,
   onInputModeChange,
   keyboardVisible,
   keyboardLayoutId,
@@ -90,9 +97,9 @@ export function TopBar({
         />
         <span className="top-bar__divider" aria-hidden="true" />
         <InputModeSelector
+          isPinyinLayoutActive={isPinyinLayoutActive}
           pinyinShowPageCount={pinyinShowPageCount}
           pinyinFuzzyMatching={pinyinFuzzyMatching}
-          keyboardLayoutId={keyboardLayoutId}
           value={inputModeId}
           onChange={onInputModeChange}
           onPinyinShowPageCountChange={onPinyinShowPageCountChange}

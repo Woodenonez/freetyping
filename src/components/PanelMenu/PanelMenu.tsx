@@ -4,7 +4,11 @@ import {
   type PanelAppearance,
   type PanelSkin,
 } from '../../app/panelAppearance';
-import { keyboardLayouts, type KeyboardLayoutId } from '../../keyboard/layouts';
+import {
+  generalKeyboardLayouts,
+  nordicKeyboardLayouts,
+  type KeyboardLayoutId,
+} from '../../keyboard/layouts';
 
 type PanelMenuProps = {
   keyboardVisible: boolean;
@@ -67,7 +71,23 @@ export function PanelMenu({
         <div className="menu-control__divider" role="separator" />
         <div className="panel-menu__group" role="group" aria-label="Keyboard layout">
           <span className="panel-menu__group-label">Layout</span>
-          {keyboardLayouts.map((layout) => (
+          <span className="panel-menu__subgroup-label">General</span>
+          {generalKeyboardLayouts.map((layout) => (
+            <button
+              className="menu-control__item"
+              data-selected={layout.id === keyboardLayoutId ? 'true' : 'false'}
+              disabled={!keyboardVisible}
+              key={layout.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={layout.id === keyboardLayoutId}
+              onClick={() => onKeyboardLayoutChange(layout.id as KeyboardLayoutId)}
+            >
+              {layout.label}
+            </button>
+          ))}
+          <span className="panel-menu__subgroup-label">Nordic</span>
+          {nordicKeyboardLayouts.map((layout) => (
             <button
               className="menu-control__item"
               data-selected={layout.id === keyboardLayoutId ? 'true' : 'false'}

@@ -8,8 +8,17 @@ import {
   type CSSProperties,
   type MouseEvent,
 } from 'react';
-import { STORAGE_KEYS, type KeyboardLayoutId, type Theme } from './appState';
+import {
+  STORAGE_KEYS,
+  type AppInputModeId,
+  type KeyboardLayoutId,
+  type Theme,
+} from './appState';
 import { TEXT_PERSIST_DEBOUNCE_MS } from './config';
+import {
+  getMigratedKeyboardLayoutId,
+  parseAppInputModeId,
+} from './inputSettings';
 import {
   parsePanelAppearance,
   parsePanelSkin,
@@ -27,7 +36,8 @@ import { useLocalStorageState } from '../hooks/useLocalStorageState';
 import { useMouseTracker } from '../hooks/useMouseTracker';
 import {
   getKeyboardLayout,
-  parseKeyboardLayoutId,
+  isNordicLayout,
+  isPinyinLayout,
 } from '../keyboard/layouts';
 import {
   applyInputResult,
@@ -35,6 +45,8 @@ import {
   getInputMode,
 } from '../input/inputManager';
 import { useChinesePinyinController } from '../input/modes/chinesePinyin';
+import { createLayoutOverlayInputMode } from '../input/modes/overlayInput';
+import type { VirtualKey } from '../keyboard/types';
 import { copyTextToClipboard } from '../utils/clipboard';
 import {
   createEditorAdapter,
@@ -62,7 +74,7 @@ export function App() {
     text: string;
     reason: string;
   } | null>(null);
-  const [inputModeId, setInputModeId] = useLocalStorageState(
+  const [inputModeSetting, setInputModeSetting] = useLocalStorageState(
     STORAGE_KEYS.inputModeId,
     'system',
   );
@@ -110,37 +122,53 @@ export function App() {
   );
   const activeKeys = useKeyboardTracker();
   const { activeMouseButtons, markMouseButton } = useMouseTracker();
-  const keyboardLayoutId = parseKeyboardLayoutId(keyboardLayoutSetting);
+  const inputModeId = parseAppInputModeId(inputModeSetting);
+  const keyboardLayoutId = getMigratedKeyboardLayoutId(
+    keyboardLayoutSetting,
+    inputModeSetting,
+  );
   const keyboardLayout = getKeyboardLayout(keyboardLayoutId);
+  const isPinyinLayoutActive = isPinyinLayout(keyboardLayoutId);
   const panelAppearance = parsePanelAppearance(panelAppearanceSetting);
   const panelSkin = parsePanelSkin(panelSkinSetting);
-  const chinesePinyin = useChinesePinyinController(inputModeId === 'zh-pinyin', {
-    fuzzyMatching: pinyinFuzzyMatching,
-  });
+  const chinesePinyin = useChinesePinyinController(
+    inputModeId === 'overlay' && isPinyinLayoutActive,
+    {
+      fuzzyMatching: pinyinFuzzyMatching,
+    },
+  );
 
   const inputMode = useMemo(() => {
-    if (inputModeId === 'zh-pinyin') {
-      return chinesePinyin.inputMode;
+    if (inputModeId === 'overlay' && isPinyinLayoutActive) {
+      return {
+        ...chinesePinyin.inputMode,
+        label: `Overlay Input · ${keyboardLayout.label}`,
+      };
+    }
+
+    if (inputModeId === 'overlay') {
+      return createLayoutOverlayInputMode(keyboardLayout);
     }
 
     return getInputMode(inputModeId);
-  }, [chinesePinyin.inputMode, inputModeId]);
+  }, [chinesePinyin.inputMode, inputModeId, isPinyinLayoutActive, keyboardLayout]);
 
   useEffect(() => {
-    if (
-      keyboardLayoutId !== 'nordic' ||
-      inputModeId === 'system' ||
-      inputModeId === 'nordic-direct'
-    ) {
-      return;
+    if (inputModeSetting !== inputModeId) {
+      setInputModeSetting(inputModeId);
     }
 
-    if (inputModeId === 'zh-pinyin') {
-      chinesePinyin.reset();
+    if (keyboardLayoutSetting !== keyboardLayoutId) {
+      setKeyboardLayoutSetting(keyboardLayoutId);
     }
-
-    setInputModeId('nordic-direct');
-  }, [chinesePinyin, inputModeId, keyboardLayoutId, setInputModeId]);
+  }, [
+    inputModeId,
+    inputModeSetting,
+    keyboardLayoutId,
+    keyboardLayoutSetting,
+    setInputModeSetting,
+    setKeyboardLayoutSetting,
+  ]);
 
   const typingStats = useMemo(
     () => calculateTypingStats(text, sessionSeconds),
@@ -243,6 +271,40 @@ export function App() {
       }
     },
     [editor, getContext, inputMode, isComposing],
+  );
+
+  const handleVirtualKeyPress = useCallback(
+    (key: VirtualKey) => {
+      if (!editor || typeof key.insertText !== 'string') {
+        return;
+      }
+
+      if (inputModeId === 'system') {
+        editor.insertText(key.insertText);
+        editor.focus();
+        return;
+      }
+
+      const context = getContext();
+      const syntheticEvent = new KeyboardEvent('keydown', {
+        key: key.insertText,
+        code: key.code,
+        bubbles: true,
+        cancelable: true,
+      });
+
+      if (
+        context &&
+        applyInputResult(editor, inputMode.onKeyDown?.(syntheticEvent, context))
+      ) {
+        editor.focus();
+        return;
+      }
+
+      editor.insertText(key.insertText);
+      editor.focus();
+    },
+    [editor, getContext, inputMode, inputModeId],
   );
 
   const handleCompositionStart = useCallback(
@@ -367,24 +429,24 @@ export function App() {
   }, [editor, recoverableText]);
 
   const handleInputModeChange = useCallback(
-    (nextInputModeId: string) => {
-      if (inputModeId === 'zh-pinyin' && nextInputModeId !== 'zh-pinyin') {
+    (nextInputModeId: AppInputModeId) => {
+      if (
+        inputModeId === 'overlay' &&
+        isPinyinLayoutActive &&
+        nextInputModeId !== 'overlay'
+      ) {
         chinesePinyin.reset();
       }
 
-      if (nextInputModeId === 'en-direct' || nextInputModeId === 'zh-pinyin') {
-        setKeyboardLayoutSetting('qwerty');
-      }
-
-      setInputModeId(nextInputModeId);
+      setInputModeSetting(nextInputModeId);
       editor?.focus();
     },
     [
       chinesePinyin,
       editor,
       inputModeId,
-      setInputModeId,
-      setKeyboardLayoutSetting,
+      isPinyinLayoutActive,
+      setInputModeSetting,
     ],
   );
 
@@ -392,18 +454,18 @@ export function App() {
     (nextLayoutId: KeyboardLayoutId) => {
       setKeyboardLayoutSetting(nextLayoutId);
 
-      if (nextLayoutId === 'nordic') {
-        if (inputModeId === 'zh-pinyin') {
+      if (isPinyinLayoutActive && nextLayoutId !== 'pinyin-cn') {
+        chinesePinyin.reset();
+      }
+
+      if (isPinyinLayout(nextLayoutId) || isNordicLayout(nextLayoutId)) {
+        if (isPinyinLayoutActive && nextLayoutId !== 'pinyin-cn') {
           chinesePinyin.reset();
         }
 
-        setInputModeId('nordic-direct');
+        setInputModeSetting('overlay');
         editor?.focus();
         return;
-      }
-
-      if (inputModeId === 'nordic-direct') {
-        setInputModeId('en-direct');
       }
 
       editor?.focus();
@@ -411,8 +473,8 @@ export function App() {
     [
       chinesePinyin,
       editor,
-      inputModeId,
-      setInputModeId,
+      isPinyinLayoutActive,
+      setInputModeSetting,
       setKeyboardLayoutSetting,
     ],
   );
@@ -435,6 +497,7 @@ export function App() {
     >
       <TopBar
         inputModeId={inputModeId}
+        isPinyinLayoutActive={isPinyinLayoutActive}
         onInputModeChange={handleInputModeChange}
         keyboardVisible={keyboardVisible}
         keyboardLayoutId={keyboardLayoutId}
@@ -501,7 +564,7 @@ export function App() {
           onInput={handleInput}
           onKeyDown={handleKeyDown}
         />
-        {inputModeId === 'zh-pinyin' ? (
+        {inputModeId === 'overlay' && isPinyinLayoutActive ? (
           <PinyinCandidateBar
             showPageCount={pinyinShowPageCount}
             viewState={chinesePinyin.viewState}
@@ -518,10 +581,10 @@ export function App() {
             activeKeys={activeKeys}
             activeMouseButtons={activeMouseButtons}
             appearance={panelAppearance}
-            editor={editor}
             keyboardLayout={keyboardLayout}
             keyboardVisible={keyboardVisible}
             mouseVisible={mouseVisible}
+            onVirtualKeyPress={handleVirtualKeyPress}
             skin={panelSkin}
           />
         </section>

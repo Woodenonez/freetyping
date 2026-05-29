@@ -31,3 +31,28 @@ Completed plan files:
 - `plan/0-1-0/v2.md`
 - `plan/0-1-0/v3.md`
 - `plan/0-1-0/v4.md`
+
+## v0.2.0
+
+Multi-layout overlay input release.
+
+Main work:
+
+1. Add optional realistic input panel appearance with shared skins.
+2. Add Classic light, Dark mechanical, Natural wood, and High contrast panel skins.
+3. Keep realistic panel skins independent from the app theme.
+4. Replace language-specific top-level input modes with `System Input` and `Overlay Input`.
+5. Make overlay behavior depend on the selected panel layout.
+6. Add `QWERTY`, `Pinyin (CN)`, `Nordic (SE/FI)`, `Nordic (NO)`, and `Nordic (DK)` layouts.
+7. Remove the combined Nordic layout and merge only identical real-life Nordic mappings.
+8. Add physical and virtual key mapping for country-specific Nordic layouts.
+9. Preserve the existing Chinese Pinyin candidate, segmentation, fuzzy matching, and punctuation behavior under `Overlay Input` plus `Pinyin (CN)`.
+10. Add migration handling for old v0.2.0 development input-mode and layout values.
+11. Update Help text to describe general System/Overlay input behavior.
+12. Add unit, browser smoke, accessibility, bundle, and static-host coverage for the new behavior.
+
+Completed plan files:
+
+- `plan/0-2-0/v1.md`
+- `plan/0-2-0/v2.md`
+- `plan/0-2-0/v3.md`

@@ -7,11 +7,11 @@ describe('input mode selection', () => {
   });
 
   it('returns requested input mode', () => {
-    expect(getInputMode('zh-pinyin').id).toBe('zh-pinyin');
+    expect(getInputMode('overlay').id).toBe('overlay');
   });
 
-  it('includes Nordic Direct as a web input mode', () => {
-    expect(inputModes.map((mode) => mode.id)).toContain('nordic-direct');
+  it('only exposes system and overlay as top-level input modes', () => {
+    expect(inputModes.map((mode) => mode.id)).toEqual(['system', 'overlay']);
   });
 
   it('falls back to system input for unknown modes', () => {

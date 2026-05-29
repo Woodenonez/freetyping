@@ -1,15 +1,11 @@
 import type { EditorAdapter } from '../utils/editorAdapter';
-import { chinesePinyinInputMode } from './modes/chinesePinyin';
-import { englishDirectInputMode } from './modes/englishDirect';
-import { nordicDirectInputMode } from './modes/nordicDirect';
+import { overlayInputMode } from './modes/overlayInput';
 import { systemInputMode } from './modes/systemInput';
 import type { InputContext, InputMode, InputResult } from './types';
 
 export const inputModes = [
   systemInputMode,
-  englishDirectInputMode,
-  nordicDirectInputMode,
-  chinesePinyinInputMode,
+  overlayInputMode,
 ] satisfies InputMode[];
 
 export function getInputMode(inputModeId: string): InputMode {

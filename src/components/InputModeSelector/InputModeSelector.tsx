@@ -1,20 +1,20 @@
 import { inputModes } from '../../input/inputManager';
-import type { KeyboardLayoutId } from '../../keyboard/layouts';
+import type { AppInputModeId } from '../../app/appState';
 
 type InputModeSelectorProps = {
+  isPinyinLayoutActive: boolean;
   pinyinShowPageCount: boolean;
   pinyinFuzzyMatching: boolean;
-  keyboardLayoutId: KeyboardLayoutId;
-  value: string;
-  onChange: (inputModeId: string) => void;
+  value: AppInputModeId;
+  onChange: (inputModeId: AppInputModeId) => void;
   onPinyinShowPageCountChange: (showPageCount: boolean) => void;
   onPinyinFuzzyMatchingChange: (fuzzyMatching: boolean) => void;
 };
 
 export function InputModeSelector({
+  isPinyinLayoutActive,
   pinyinShowPageCount,
   pinyinFuzzyMatching,
-  keyboardLayoutId,
   value,
   onChange,
   onPinyinShowPageCountChange,
@@ -22,10 +22,6 @@ export function InputModeSelector({
 }: InputModeSelectorProps) {
   const [systemMode, ...webModes] = inputModes;
   const currentMode = inputModes.find((mode) => mode.id === value) ?? systemMode;
-  const isInputModeDisabled = (inputModeId: string) =>
-    keyboardLayoutId === 'nordic' &&
-    inputModeId !== 'system' &&
-    inputModeId !== 'nordic-direct';
 
   return (
     <details className="menu-control">
@@ -39,26 +35,24 @@ export function InputModeSelector({
           type="button"
           role="menuitemradio"
           aria-checked={currentMode.id === systemMode.id}
-          onClick={() => onChange(systemMode.id)}
+          onClick={() => onChange(systemMode.id as AppInputModeId)}
         >
           {systemMode.label}
         </button>
-        <div className="menu-control__divider" role="separator" />
         {webModes.map((mode) => (
           <button
             className="menu-control__item"
             data-selected={currentMode.id === mode.id ? 'true' : 'false'}
-            disabled={isInputModeDisabled(mode.id)}
             key={mode.id}
             type="button"
             role="menuitemradio"
             aria-checked={currentMode.id === mode.id}
-            onClick={() => onChange(mode.id)}
+            onClick={() => onChange(mode.id as AppInputModeId)}
           >
             {mode.label}
           </button>
         ))}
-        {currentMode.id === 'zh-pinyin' ? (
+        {currentMode.id === 'overlay' && isPinyinLayoutActive ? (
           <>
             <div className="menu-control__divider" role="separator" />
             <label className="menu-control__item menu-control__checkbox-item">

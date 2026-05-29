@@ -67,12 +67,12 @@ export function FileMenu({
         <details className="menu-control__nested">
           <summary aria-label="Help">Help</summary>
           <div className="menu-control__help" role="note">
-            <p>Chinese Pinyin</p>
+            <p>Input</p>
             <ul>
-              <li>Number / Arrow keys to select candidates.</li>
-              <li>Space commits the selected candidate.</li>
-              <li>Fuzzy matching is optional in Input Mode.</li>
-              <li>Punctuation keys insert Chinese punctuation.</li>
+              <li>System Input uses your browser and operating system.</li>
+              <li>Overlay Input uses the selected panel layout.</li>
+              <li>Panel layouts change the virtual keyboard and overlay behavior.</li>
+              <li>Virtual keys insert the character shown by the active layout.</li>
             </ul>
           </div>
         </details>
